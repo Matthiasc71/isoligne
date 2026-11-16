@@ -115,7 +115,7 @@ components:
     height: "48px"
 ---
 
-<!-- SEED: établi avec le propriétaire avant implémentation (spec §8, maquettes design/maquettes/v2-*.png). Les tokens sont normatifs. Relancer /impeccable document en mode scan dès que src/design/ existe, pour relever les composants réels et écrire .impeccable/design.json. -->
+<!-- Relevé sur l'implémentation du jalon 1 (src/design/, src/ui/, src/outliner/). Les tokens sont normatifs. -->
 
 # Design System: Isoligne
 
@@ -203,14 +203,38 @@ Angles vifs partout (rayon 0). Traits de 1 px, pointillés (2 px / 4 px) pour le
 
 ## Components
 
-Les composants seront relevés dans le code au premier passage `/impeccable document` en mode scan. Principes établis :
+Implémentés dans `src/design/signature.tsx` (signature), `src/ui/ui.tsx` (primitives) et `src/outliner/` (nomenclature).
 
-- **Boutons** : icônes seules, carré de 48 px bordé de 1 px, `aria-label` et info-bulle sur ordinateur. Actif = rempli. « Ajouter » = trait et icône en redline.
-- **Sélecteur de vue (Page · Graphe · Frise)** : seul contrôle avec du texte, segments en capitales Label, le segment actif rempli.
-- **Onglets de disposition (Radial · Arbre · Libre · Frise)** : simples libellés, l'actif souligné d'un trait de 2 px.
-- **Ligne de projet** : carré de calque, titre en body, date en cote à droite (en redline si c'est la plus urgente), trait d'avancement fin dessous ; séparée de la suivante par un trait de cote.
-- **Ligne de nomenclature** : numéro en cote, case à cocher carrée (cocher trace une croix), libellé, lignes de points jusqu'à l'info de droite. Les branches de premier niveau en Label.
-- **Champs** : soulignés d'un trait de 1 px, sans boîte ni fond ; focus = trait de 2 px.
+### Buttons
+- **Bouton icône** (`BoutonIcone`) : carré de 48 px, trait de 1 px en cote, icône maison de 24 px. `aria-label` + info-bulle. Actif = rempli (fond trait, icône fond). Variante « ajouter » en redline, remplie au survol. Variante sans cadre pour les barres hautes.
+- **Bouton principal** : plein (fond trait), libellé en Label capitales, 48 px de haut. Désactivé = contour cote, sans remplissage.
+- **Danger** : rempli en redline, toujours dans une feuille de confirmation à deux boutons (« Garder » / « Supprimer »).
+
+### Segments (sélecteurs)
+- **Sélecteur de vue Page · Graphe · Frise** et **segments** (tri, type, thème) : cases de 48 à 52 px séparées par un trait, libellés en Label, l'option active remplie. Seuls contrôles à texte de la navigation.
+
+### Feuilles (panneaux)
+- **Feuille du bas** (`Feuille`, `<dialog>` modal) : même papier que l'écran, trait de 1 px en haut (cadre complet sur ordinateur), fond derrière **non assombri**, titre en Label, fermeture par icône. Entrée : glissement de 16 px et fondu en 300 ms (coupé si « réduire les animations »).
+- **Choix** : lignes pleine largeur de 48 px séparées par un trait de grille ; l'option active est en gras avec un carré plein à droite.
+
+### Champs
+- Soulignés d'un trait cote de 1 px, sans boîte ni fond ; focus = trait de 2 px. Texte d'invite en cote.
+
+### Navigation
+- **iPhone** : barre du bas fixe (Projets · Calendrier · Recherche · +), 4 boutons icônes répartis, l'écran courant rempli. Remplacée sur la page projet par le sélecteur de vue + « + ».
+- **Ordinateur** : colonne latérale d'icônes (80 px), colonne projets (300 à 360 px), page.
+
+### Nomenclature (signature)
+- Ligne de 56 px minimum : numéro en cote (cible de 44 px : toucher = panneau, appui long = déplacer), case carrée si c'est une tâche, texte éditable (Label capitales pour les branches de premier niveau), lignes de points, information de droite (date, « + 2 faites », « +4 » replié).
+- Seule l'échéance la plus urgente porte le **nuage de révision** ; une date en retard s'écrit « J+2 » en redline.
+- Hauteur des champs calculée par CSS (copie invisible du texte), sans mesure en JavaScript.
+
+### Cote, nuage, calque, cartouche
+- **Ligne de cote** (`CoteAvancement`) : borne, trait plein de 2 px jusqu'à l'avancement avec flèche, pointillé 2/4 jusqu'à la borne de fin, valeur « 39 % ».
+- **Cote de distance** (`CoteDistance`) : « ⟵ 3 j ⟶ » en redline sous le compte à rebours.
+- **Nuage** (`Nuage`) : contour festonné calculé à la taille du texte, tracé en 250 ms.
+- **Calque** (`Calque`) : carré de 10 px + numéro en cote ; contour décalé de 2 px en mode jour.
+- **Cartouche** : grille de 6 colonnes bordée de traits pleins, étiquettes en Label cote au-dessus de chaque valeur. C'est le seul endroit où les étiquettes sont permises, parce que c'est le détail déplié.
 
 ## Do's and Don'ts
 
