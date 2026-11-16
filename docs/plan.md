@@ -223,7 +223,7 @@ isoligne/
   - déploiement du Worker et jeton d'appareil sur `/unfurl` (jalon 4) ;
   - stylet et pression sur appareil réel (jalon 7).
 
-### Jalon 4 : synchro (livré le 16.11.2026, déploiement en cours)
+### Jalon 4 : synchro (livré et déployé le 16.11.2026)
 - Fait :
   - chiffrement de bout en bout : secret maître, clé d'espace, AES-256-GCM ;
   - appairage par code de 8 caractères et empreinte à 6 chiffres (ECDH P-256) ;
@@ -234,8 +234,11 @@ isoligne/
   - `/unfurl` exige désormais un jeton d'appareil.
 - Tests : convergence hors ligne (unitaires et propriétés), intégration avec une D1 locale, parcours complet à deux navigateurs (`npm run e2e:synchro`, en CI).
 - Rapport : `design/rapports/jalon-4/rapport.md` (critique 33/40, audit 18/20, 0 anti-pattern, 0 violation axe).
+- Déploiement : Worker `isoligne-api` en ligne sur `https://isoligne-api.matthias-cordier71.workers.dev`, base D1 « isoligne » (Europe de l'Ouest), sel généré dans la CI. Workflow `Déployer le Worker`, lancé à la main ; secrets GitHub `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID`. Vérifié : le service répond, un faux jeton est refusé en 401.
 - Reporté :
   - bouton « Nouveau code » après expiration ;
-  - mesure du CPU réel du Worker après déploiement ;
+  - build de l'app avec `VITE_WORKER_URL` et mise en ligne sur Pages (jalon 7) ;
+  - mesure du CPU réel par requête, une fois l'app en ligne (tableau de bord Cloudflare, Metrics du Worker) ;
+  - retirer les origines `localhost` de `ORIGINES` en production (jalon 7) ;
   - essai sur iPhone réel (jalon 7).
 
