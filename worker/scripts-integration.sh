@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 rm -rf .wrangler/state
 [ -f .dev.vars ] || printf 'SEL=sel-de-test-local-uniquement-0123\n' > .dev.vars
 npx wrangler d1 migrations apply isoligne --local > /dev/null
-npx wrangler dev --port 8788 --ip 127.0.0.1 > .wrangler-integration.log 2>&1 &
+npx wrangler dev --var ESPACES_MAX:1000 --port 8788 --ip 127.0.0.1 > .wrangler-integration.log 2>&1 &
 PID=$!
 trap 'kill $PID 2>/dev/null || true' EXIT
 for _ in $(seq 1 60); do curl -s -o /dev/null http://127.0.0.1:8788/ && break; sleep 1; done

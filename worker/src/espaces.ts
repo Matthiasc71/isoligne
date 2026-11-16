@@ -1,5 +1,6 @@
 import {
   ErreurHttp, aleatoireB64, aleatoireId, authentifier, egal, empreinte, json, lireJson, limiter, texte, type Env,
+  plafondEspaces,
 } from './outils';
 
 const HEX32 = /^[0-9a-f]{32}$/;
@@ -25,6 +26,9 @@ export async function creerEspace(r: Request, env: Env): Promise<Response> {
   const secours = texte(c.secours, 64, HEX64);
   const existe = await env.DB.prepare('SELECT 1 FROM espaces WHERE id = ?1').bind(espace).first();
   if (existe) throw new ErreurHttp(409, 'espace existant');
+  // Instance personnelle : un inconnu ne peut pas ouvrir son propre espace sur ce Worker.
+  const total = await env.DB.prepare('SELECT COUNT(*) AS n FROM espaces').first<{ n: number }>();
+  if ((total?.n ?? 0) >= plafondEspaces(env)) throw new ErreurHttp(403, 'instance personnelle : espace déjà créé');
   const a = await nouvelAppareil(env, espace, NOM(c.nom));
   await env.DB.batch([
     env.DB.prepare('INSERT INTO espaces (id, secours_hash, cree) VALUES (?1, ?2, ?3)').bind(espace, await empreinte(env, secours), Date.now()),

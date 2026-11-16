@@ -4,6 +4,14 @@ export interface Env {
   ORIGINES: string;
   /** Sel des empreintes de jetons (wrangler secret, jamais dans le dépôt). */
   SEL: string;
+  /** Nombre maximal d'espaces : « 1 » en production (instance personnelle). */
+  ESPACES_MAX?: string;
+}
+
+/** Instance personnelle : au-delà de ESPACES_MAX espaces (1 par défaut), plus aucune création. */
+export function plafondEspaces(env: Pick<Env, 'ESPACES_MAX'>): number {
+  const n = Number.parseInt(env.ESPACES_MAX ?? '1', 10);
+  return Number.isFinite(n) && n >= 1 ? n : 1;
 }
 
 const enc = new TextEncoder();

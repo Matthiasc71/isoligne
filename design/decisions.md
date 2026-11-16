@@ -77,3 +77,8 @@ Requête : « outil de projets personnel, style blueprint/cyanotype, très épur
 - Déploiement par un workflow lancé à la main (`deployer-worker.yml`). Il crée la base D1 au premier passage (Europe de l'Ouest), applique les migrations, déploie, puis génère le sel une seule fois dans la CI : jamais affiché ni versionné.
 - Il vérifie ensuite que le Worker répond et qu'un faux jeton est refusé en 401 : preuve que D1 et le sel fonctionnent.
 - Secrets GitHub : `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
+
+## Instance personnelle : un seul espace (16.11.2026)
+- L'adresse du Worker est publique (dépôt public, et une page Pages privée exige GitHub Enterprise Cloud, payant). N'importe qui pouvait donc ouvrir son propre espace et consommer le quota gratuit.
+- `ESPACES_MAX = "1"` en production : la création d'un espace est refusée (403) dès qu'un espace existe. La restauration et l'appairage vers cet espace restent possibles. Les tests locaux relèvent le plafond (`--var ESPACES_MAX:1000`).
+- Si un inconnu créait le premier espace avant vous, il suffirait de vider la table `espaces` en tant qu'administrateur (`wrangler d1 execute`). On ne perd rien : vos données ne sont pas encore sur le serveur.

@@ -58,3 +58,14 @@ describe('aperçu en texte seul', () => {
     expect(composer({ titre: '  Page &amp; co ' }, 'https://exemple.fr/').titre).toBe('Page & co');
   });
 });
+
+describe('instance personnelle', () => {
+  it('un seul espace par défaut, plafond relevable pour les tests', async () => {
+    const { plafondEspaces } = await import('../src/outils');
+    expect(plafondEspaces({})).toBe(1);
+    expect(plafondEspaces({ ESPACES_MAX: '1' })).toBe(1);
+    expect(plafondEspaces({ ESPACES_MAX: '1000' })).toBe(1000);
+    expect(plafondEspaces({ ESPACES_MAX: 'n’importe quoi' })).toBe(1);
+    expect(plafondEspaces({ ESPACES_MAX: '0' })).toBe(1);
+  });
+});

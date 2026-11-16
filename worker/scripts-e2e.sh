@@ -6,4 +6,4 @@ PERSIST=.wrangler/e2e
 rm -rf "$PERSIST"
 [ -f .dev.vars ] || printf 'SEL=sel-de-test-local-uniquement-0123\n' > .dev.vars
 npx wrangler d1 migrations apply isoligne --local --persist-to "$PERSIST" > /dev/null
-exec npx wrangler dev --port 8789 --ip 127.0.0.1 --persist-to "$PERSIST" --var ORIGINES:http://localhost:4174
+exec npx wrangler dev --var ESPACES_MAX:1000 --port 8789 --ip 127.0.0.1 --persist-to "$PERSIST" --var ORIGINES:http://localhost:4174

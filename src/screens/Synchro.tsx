@@ -150,7 +150,11 @@ function Activer({ onFini }: { onFini: () => void }) {
   const valider = async (e: FormEvent) => {
     e.preventDefault();
     setEnvoi(true);
-    try { await service.creerEspace(nom.trim() || nomParDefaut()); onFini(); } catch (x) { setErreur(message(x)); } finally { setEnvoi(false); }
+    try { await service.creerEspace(nom.trim() || nomParDefaut()); onFini(); } catch (x) {
+      // Instance personnelle : un espace existe déjà sur ce serveur.
+      setErreur(x instanceof ErreurSynchro && x.statut === 403
+        ? 'Votre espace existe déjà : utilisez « Rejoindre un espace » ou « Restaurer ».' : message(x));
+    } finally { setEnvoi(false); }
   };
   return (
     <form className="form-ajout" onSubmit={(e) => void valider(e)}>

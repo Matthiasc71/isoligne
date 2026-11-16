@@ -6,7 +6,9 @@
   "compatibility_date": "2026-11-01",
   "workers_dev": true,
   "vars": {
-    "ORIGINES": "https://matthiasc71.github.io,http://localhost:5173,http://localhost:4173"
+    "ORIGINES": "https://matthiasc71.github.io,http://localhost:5173,http://localhost:4173",
+    // Instance personnelle : un seul espace (le vôtre). Les tests locaux relèvent ce plafond.
+    "ESPACES_MAX": "1"
   },
   "observability": { "enabled": false },
   "d1_databases": [
