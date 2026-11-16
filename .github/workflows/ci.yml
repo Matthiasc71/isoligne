@@ -31,9 +31,9 @@ jobs:
         run: npm run typecheck
       - name: Tests unitaires (arbre, convergence hors ligne, dates, stockage)
         run: npm test
-      - name: Worker (dépendances, typage, tests de sécurité)
+      - name: Worker (typage, tests de sécurité, intégration avec D1 locale)
         working-directory: worker
-        run: npm ci && npm run typecheck && npm test
+        run: npm ci && npm run typecheck && npm test && npm run test:integration
       - name: Détecteur d'anti-patterns (doit renvoyer zéro)
         run: npx impeccable detect --github src/
       - name: Navigateurs Playwright (Chromium + WebKit)

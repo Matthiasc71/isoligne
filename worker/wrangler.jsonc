@@ -8,5 +8,14 @@
   "vars": {
     "ORIGINES": "https://matthiasc71.github.io,http://localhost:5173,http://localhost:4173"
   },
-  "observability": { "enabled": false }
+  "observability": { "enabled": false },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "isoligne",
+      // Rempli au déploiement (jalon 4) ; un identifiant de base n'est pas un secret.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ]
 }
