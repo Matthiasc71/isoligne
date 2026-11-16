@@ -1,0 +1,66 @@
+.editeur {
+  min-height: 1.45em;
+  max-width: 68ch;
+  overflow-wrap: anywhere;
+}
+.editeur:focus-visible {
+  outline: none;
+}
+.editeur > * + * {
+  margin-top: 0.6em;
+}
+.editeur h2,
+.editeur h3 {
+  font-family: var(--police-titre);
+  font-stretch: 125%;
+  font-weight: 700;
+  font-size: var(--taille-cote);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-top: 1.6em;
+}
+.editeur ul,
+.editeur ol {
+  padding-left: 1.4em;
+}
+.editeur ul {
+  list-style: square;
+}
+.editeur ol {
+  list-style: decimal;
+}
+.editeur ol ::marker {
+  font-family: var(--police-mono);
+  font-size: var(--taille-cote);
+  color: var(--trait-2);
+}
+.editeur blockquote {
+  margin: 0;
+  padding-left: 16px;
+  border-left: 1px solid var(--trait-2);
+  color: var(--trait-2);
+}
+.editeur code,
+.editeur pre {
+  font-family: var(--police-mono);
+  font-size: var(--taille-cote);
+}
+.editeur pre {
+  padding: 12px 16px;
+  border: 1px solid var(--trait-2);
+  overflow-x: auto;
+}
+.editeur hr {
+  border: 0;
+  border-top: 1px solid var(--trait-2);
+}
+.editeur a {
+  color: var(--trait);
+}
+.editeur p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--trait-2);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

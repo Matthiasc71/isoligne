@@ -1,0 +1,105 @@
+.accueil-tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--cible);
+  margin: -12px -12px 28px 0;
+}
+.accueil-date {
+  font-weight: 400;
+}
+
+/* Prochaine échéance */
+.prochaine {
+  display: block;
+  margin-bottom: var(--section);
+  text-decoration: none;
+  color: inherit;
+}
+.prochaine-haut {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.prochaine-compte {
+  flex: none;
+}
+.compact .prochaine-haut {
+  flex-direction: column;
+  gap: 16px;
+}
+.prochaine-texte {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding-top: 2px;
+}
+.prochaine-titre {
+  overflow-wrap: anywhere;
+}
+.prochaine-projet {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Liste des projets */
+.liste-projets {
+  border-top: 1px solid var(--grille-majeure);
+}
+.ligne-projet {
+  border-bottom: 1px solid var(--grille-majeure);
+}
+.ligne-separee {
+  margin-top: 28px;
+  border-top: 1px solid var(--grille-majeure);
+}
+.ligne-projet a {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  grid-template-rows: auto 12px;
+  column-gap: 18px;
+  align-items: center;
+  min-height: 64px;
+  padding: 14px 0 8px;
+  color: inherit;
+  text-decoration: none;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.ligne-projet a.courant .ligne-projet-titre {
+  font-weight: 700;
+}
+.ligne-projet-titre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ligne-projet-date {
+  grid-column: 3;
+}
+.ligne-projet-avancement {
+  grid-column: 2 / 4;
+  grid-row: 2;
+  align-self: center;
+  height: 1px;
+}
+.ligne-projet-avancement > span {
+  display: block;
+  height: 1px;
+  background: var(--trait-2);
+}
+@media (hover: hover) {
+  .ligne-projet a:hover .ligne-projet-titre {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+}
+
+.accueil-vide {
+  padding: 20px 0;
+}

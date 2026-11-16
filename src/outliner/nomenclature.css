@@ -1,0 +1,172 @@
+.nomenclature-liste {
+  border-top: 1px solid var(--grille-majeure);
+}
+
+.ligne-noeud {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(44px, auto) 1fr;
+  column-gap: 12px;
+  align-items: start;
+  min-height: var(--ligne);
+  border-bottom: 1px solid var(--grille-majeure);
+  touch-action: pan-y;
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--ligne);
+}
+.ligne-noeud.nouvelle {
+  animation: ligne-entree var(--duree-trait) var(--courbe);
+}
+@keyframes ligne-entree {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+.ligne-num {
+  min-height: var(--ligne);
+  min-width: 44px;
+  padding: 0;
+  text-align: left;
+  align-self: stretch;
+  -webkit-touch-callout: none;
+  user-select: none;
+  touch-action: none;
+}
+
+.ligne-corps {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  padding: 15px 0 13px calc(var(--profondeur, 0) * 16px);
+}
+.ligne-corps > .case {
+  margin-top: -12px;
+}
+
+.champ-auto {
+  flex: 1 1 auto;
+  min-width: 2ch;
+  display: grid;
+  line-height: 1.6;
+}
+.champ-auto.t-label {
+  line-height: 2.1;
+}
+.champ-auto::after,
+.champ-auto > .ligne-texte {
+  grid-area: 1 / 1 / 2 / 2;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  line-height: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.champ-auto::after {
+  content: attr(data-valeur);
+  visibility: hidden;
+}
+.ligne-texte {
+  resize: none;
+  overflow: hidden;
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+.faite .ligne-texte {
+  color: var(--trait-2);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* Lignes de points entre le libellé et l'information de droite */
+.ligne-points {
+  flex: 0 1 48px;
+  min-width: 12px;
+  align-self: center;
+  height: 0;
+  border-bottom: 1px dotted var(--trait-2);
+  margin-top: 6px;
+}
+.ligne-droite {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  min-height: 25px;
+}
+.ligne-info {
+  min-height: var(--cible);
+  margin: -12px 0;
+}
+.ligne-date {
+  white-space: nowrap;
+}
+
+.premier-niveau .ligne-num {
+  color: var(--trait-2);
+}
+
+.faites-racine {
+  min-height: var(--cible);
+  padding: 0;
+  margin-top: 4px;
+}
+
+/* Glisser-déplacer */
+.en-glisse {
+  user-select: none;
+}
+.ligne-noeud.glissee {
+  outline: 1px solid var(--trait);
+  outline-offset: -1px;
+}
+.ligne-noeud.indicateur::before,
+.indicateur-depot {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 2px;
+  background: var(--trait);
+}
+.indicateur-depot {
+  position: relative;
+  display: block;
+}
+.indice-balayage {
+  position: absolute;
+  left: -40px;
+  top: 16px;
+  color: var(--trait-2);
+}
+
+.premiere-idee {
+  border-top: 1px solid var(--grille-majeure);
+}
+.premiere-idee .ligne-num {
+  display: flex;
+  align-items: center;
+}
+.premiere-idee .ligne-texte {
+  flex: 1;
+  min-height: var(--ligne);
+}
+
+/* Barre au-dessus du clavier (iPhone) */
+.barre-clavier {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: space-around;
+  background: var(--fond);
+  border-top: 1px solid var(--trait-2);
+}

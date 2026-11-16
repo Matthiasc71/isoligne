@@ -1,0 +1,246 @@
+.projet {
+  padding-bottom: calc(var(--barre-bas) + 96px);
+}
+
+.projet-tete {
+  margin-bottom: var(--section);
+}
+.projet-tete > .calque {
+  margin-bottom: 14px;
+}
+.projet-titre {
+  display: block;
+  width: 100%;
+  min-height: var(--cible);
+  padding: 7px 0;
+  margin: -7px 0;
+  text-align: left;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.projet-titre-branche {
+  overflow-wrap: anywhere;
+}
+.projet-ligne {
+  margin-top: 12px;
+}
+
+.projet-section + .projet-section {
+  margin-top: 36px;
+}
+
+/* Cartouche : bloc-titre de plan */
+.cartouche {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  margin-top: 28px;
+  border-top: 1px solid var(--trait);
+  border-left: 1px solid var(--trait);
+  animation: cartouche-entree var(--duree-trait) var(--courbe);
+}
+@keyframes cartouche-entree {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+.cartouche-case {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 64px;
+  padding: 10px 12px;
+  border-right: 1px solid var(--trait);
+  border-bottom: 1px solid var(--trait);
+}
+.cartouche-case .t-label {
+  color: var(--trait-2);
+}
+.cartouche-case {
+  grid-column: span 3;
+  min-width: 0;
+}
+.cartouche-large {
+  grid-column: 1 / -1;
+}
+.cartouche-petite {
+  grid-column: span 2;
+}
+.cartouche-case input,
+.cartouche-case select {
+  width: 100%;
+  min-height: var(--cible);
+  padding: 0;
+  margin-bottom: -10px;
+}
+.cartouche-case {
+  gap: 0;
+}
+
+/* Fil d'Ariane (poupée russe) */
+.fil-ariane {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 14px;
+}
+.fil-ariane button {
+  min-height: 40px;
+  padding: 0;
+  text-align: left;
+}
+.fil-sep {
+  padding: 0 10px;
+  color: var(--trait-2);
+}
+.branche-note {
+  margin-top: 20px;
+}
+
+/* Blocs */
+.bloc-echeance {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: var(--ligne);
+  border-top: 1px solid var(--grille-majeure);
+  border-bottom: 1px solid var(--grille-majeure);
+  /* Case alignée sur celles de l'arborescence (colonne des numéros de 44 px + 12 px). */
+  padding-left: 56px;
+}
+.bloc-echeance-titre {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 4ch;
+  min-height: var(--cible);
+}
+.bloc-echeance.faite .bloc-echeance-titre {
+  color: var(--trait-2);
+  text-decoration: line-through;
+}
+.bloc-echeance-date {
+  position: relative;
+  display: grid;
+  place-items: center end;
+  min-width: 48px;
+  min-height: var(--cible);
+  cursor: pointer;
+}
+.date-cachee {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  cursor: pointer;
+}
+.bloc-separateur {
+  border: 0;
+  border-top: 1px solid var(--trait-2);
+  margin: 0;
+}
+.bloc-attente {
+  min-height: 1.45em;
+}
+
+.commandes-bloc,
+.reorganiser-tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.commandes-bloc-actions {
+  display: flex;
+  gap: 8px;
+}
+.commandes-bloc .bouton-icone:disabled {
+  color: var(--trait-2);
+  border-color: var(--grille-majeure);
+}
+.reorganiser-tete {
+  margin-bottom: 28px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--trait);
+}
+.lien-action {
+  min-height: var(--cible);
+  padding: 0 4px;
+}
+
+/* Barre du bas : sélecteur Page · Graphe · Frise + ajout */
+.barre-vue {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 16px var(--marge) calc(16px + env(safe-area-inset-bottom));
+  background: var(--fond);
+  border-top: 1px solid var(--grille-majeure);
+}
+.projet-large .barre-vue {
+  position: sticky;
+  left: auto;
+  right: auto;
+  margin: 56px -56px -96px;
+  padding: 16px 56px 24px;
+}
+.selecteur-vue {
+  flex: 1;
+  display: flex;
+  border: 1px solid var(--trait-2);
+  max-width: 420px;
+}
+.selecteur-vue button {
+  flex: 1;
+  min-height: 52px;
+  color: var(--trait);
+}
+.selecteur-vue button.actif {
+  background: var(--trait);
+  color: var(--fond);
+}
+
+.vue-a-venir {
+  position: fixed;
+  inset: 0 0 var(--barre-bas) 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--fond);
+}
+.projet-large .vue-a-venir {
+  position: absolute;
+  inset: 0;
+}
+
+/* Confirmation */
+.confirmation {
+  margin-bottom: 28px;
+  max-width: 48ch;
+}
+.confirmation-actions {
+  display: flex;
+  gap: 12px;
+}
+.bouton-secondaire,
+.bouton-danger {
+  flex: 1;
+  min-height: var(--cible);
+  border: 1px solid var(--trait-2);
+}
+.bouton-danger {
+  border-color: var(--redline);
+  background: var(--redline);
+  color: var(--fond);
+}

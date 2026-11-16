@@ -1,0 +1,62 @@
+.panneau-date {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 16px;
+}
+.panneau-date input:disabled {
+  color: var(--trait-2);
+}
+
+.rappels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.rappel {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--trait-2);
+  color: var(--trait);
+}
+.rappel.actif {
+  background: var(--trait);
+  border-color: var(--trait);
+  color: var(--fond);
+}
+
+.couleurs-noeud {
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0;
+  border: 0;
+}
+.couleurs-noeud legend {
+  padding: 0;
+  margin-bottom: 8px;
+}
+.couleurs-liste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.couleur-aucune {
+  width: 16px;
+  height: 16px;
+  border: 1px dashed var(--trait-2);
+}
+
+.panneau-note {
+  min-height: var(--cible);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--trait-2);
+}
+
+.rattacher {
+  padding-left: 40px;
+  max-height: 40dvh;
+  overflow: auto;
+}
+.choix svg {
+  flex: none;
+}

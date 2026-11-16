@@ -1,0 +1,46 @@
+.form-ajout {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.couleurs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.couleurs legend {
+  margin-bottom: 8px;
+  padding: 0;
+}
+.couleur {
+  display: grid;
+  place-items: center;
+  width: var(--cible);
+  height: var(--cible);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.couleur.actif {
+  border-color: var(--trait);
+}
+.couleur:has(input:focus-visible) {
+  outline: 2px solid var(--trait);
+  outline-offset: 2px;
+}
+
+.bouton-principal {
+  min-height: var(--cible);
+  padding: 0 24px;
+  border: 1px solid var(--trait);
+  background: var(--trait);
+  color: var(--fond);
+}
+.bouton-principal:disabled {
+  background: transparent;
+  color: var(--trait-2);
+  border-color: var(--trait-2);
+}

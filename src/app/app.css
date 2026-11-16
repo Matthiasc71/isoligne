@@ -1,0 +1,82 @@
+.app {
+  min-height: 100dvh;
+}
+
+.ecran {
+  padding: calc(env(safe-area-inset-top) + 56px) var(--marge) calc(var(--barre-bas) + var(--section));
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* iPhone : barre du bas fixe */
+.barre-bas {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px var(--marge) calc(16px + env(safe-area-inset-bottom));
+  background: var(--fond);
+  border-top: 1px solid var(--grille-majeure);
+}
+
+/* Ordinateur : colonnes */
+.app-large {
+  display: grid;
+  grid-template-columns: 80px minmax(300px, 360px) minmax(0, 1fr);
+  height: 100dvh;
+}
+.nav-laterale {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 0;
+  border-right: 1px solid var(--grille-majeure);
+}
+.nav-laterale > :last-child {
+  margin-top: 8px;
+}
+.colonne-projets {
+  overflow: auto;
+  border-right: 1px solid var(--trait-2);
+}
+.colonne-projets .ecran {
+  padding: 40px var(--marge);
+}
+.app-large .colonne-principale {
+  overflow: auto;
+  position: relative;
+}
+.app-large .ecran {
+  padding: 40px 56px 96px;
+}
+.aucune-selection {
+  height: 100%;
+}
+
+.barre-haute {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -12px -12px 28px;
+}
+
+.raccourcis {
+  margin: 0;
+}
+.raccourci {
+  display: grid;
+  grid-template-columns: minmax(150px, 40%) 1fr;
+  gap: 16px;
+  align-items: baseline;
+  min-height: var(--cible);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--grille-majeure);
+}
+.raccourci dd {
+  margin: 0;
+}

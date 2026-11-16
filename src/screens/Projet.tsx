@@ -1,0 +1,320 @@
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import type * as Y from 'yjs';
+import { useArbre, useProjet, useStockage, useVersion } from '../app/contexte';
+import { aller, type Route, type Vue } from '../app/route';
+import { useMaintenant } from '../app/temps';
+import { IcArbre, IcEcheance, IcPlus, IcRetour, IcSeparateur, IcSuite, IcTexte } from '../design/icones';
+import { Calque, CoteAvancement } from '../design/signature';
+import {
+  COULEURS, LIBELLES_COULEUR, LIBELLES_STATUT, LIBELLES_TYPE, LIBELLES_TYPE_COURT, RACINE, formaterCalque, lireMeta,
+  type CleCouleur, type Meta, type StatutProjet, type TypeProjet,
+} from '../data/schema';
+import { creerBloc, definirStatut, definirTitre, echeancesOuvertes, lireBlocs, modifierMeta } from '../data/projet';
+import { ancetres, creerNoeud, noteDe } from '../tree/arbre';
+import { avancement } from '../tree/lignes';
+import { aujourdhui, dateCourte, dateJour } from '../time/dates';
+import { Nomenclature } from '../outliner/Nomenclature';
+import { PanneauNoeud } from '../outliner/PanneauNoeud';
+import { Avis, BoutonIcone, Choix, Feuille } from '../ui/ui';
+import { BlocEcheance, BlocSeparateur, BlocTexte, CommandesBloc } from './Blocs';
+import './projet.css';
+
+const EditeurRiche = lazy(() => import('../editor/EditeurRiche'));
+
+type RouteProjet = Extract<Route, { ecran: 'projet' }>;
+
+export default function Projet({ route, large }: { route: RouteProjet; large: boolean }) {
+  const p = useProjet(route.id);
+  if (!p) return null;
+  return <PageProjet route={route} large={large} doc={p.doc} annuler={p.annuler} />;
+}
+
+function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large: boolean; doc: Y.Doc; annuler: Y.UndoManager }) {
+  const stockage = useStockage();
+  useVersion(doc);
+  const arbre = useArbre(doc);
+  const maintenant = useMaintenant();
+  const meta = lireMeta(doc);
+  const existe = doc.getMap('meta').has('titre');
+
+  const racine = route.branche && arbre.parId.has(route.branche) ? route.branche : RACINE;
+  const noeudRacine = racine !== RACINE ? arbre.parId.get(racine)! : null;
+  const urgente = useMemo(() => echeancesOuvertes(doc, arbre, racine)[0] ?? null, [doc, arbre, racine]);
+  const { faites, total } = avancement(arbre, racine);
+  const blocs = lireBlocs(doc);
+
+  const [cartouche, setCartouche] = useState(false);
+  const [panneau, setPanneau] = useState<{ id: string; champ?: 'date' | 'couleur' } | null>(null);
+  const [ajout, setAjout] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const [reorganiser, setReorganiser] = useState(false);
+  const [confirmer, setConfirmer] = useState(false);
+  const [avis, setAvis] = useState<string | null>(null);
+  const [nouveauBloc, setNouveauBloc] = useState<string | null>(null);
+  const [focusNoeud, setFocusNoeud] = useState<string | null>(null);
+
+  const allerBranche = useCallback((branche: string | null, vue: Vue = route.vue) => {
+    aller({ ecran: 'projet', id: route.id, branche, vue });
+  }, [route.id, route.vue]);
+
+  const remonter = useCallback(() => {
+    if (!noeudRacine) { aller({ ecran: 'accueil' }); return; }
+    allerBranche(noeudRacine.parent === RACINE ? null : noeudRacine.parent);
+  }, [noeudRacine, allerBranche]);
+
+  // Cmd/Ctrl+Z hors des champs : annuler.
+  useEffect(() => {
+    const f = (e: KeyboardEvent) => {
+      const cible = e.target as HTMLElement | null;
+      if (cible?.closest('input, textarea, [contenteditable="true"]')) return;
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) annuler.redo(); else annuler.undo();
+      }
+    };
+    window.addEventListener('keydown', f);
+    return () => window.removeEventListener('keydown', f);
+  }, [annuler]);
+
+  if (!existe) {
+    return (
+      <div className="ecran">
+        <div className="barre-haute">
+          <BoutonIcone libelle="Retour aux projets" sansCadre onClick={() => aller({ ecran: 'accueil' })}><IcRetour /></BoutonIcone>
+        </div>
+        <p className="t-cote">Projet introuvable</p>
+      </div>
+    );
+  }
+
+  const ajouterBloc = (type: 'branche' | 'texte' | 'echeance' | 'separateur') => {
+    setAjout(false);
+    if (type === 'branche') {
+      setFocusNoeud(creerNoeud(doc, racine));
+      return;
+    }
+    setNouveauBloc(creerBloc(doc, type));
+  };
+
+  const nomenclature = (
+    <Nomenclature
+      doc={doc}
+      annuler={annuler}
+      racine={racine}
+      urgente={urgente?.genre === 'noeud' ? urgente.cible : null}
+      maintenant={maintenant}
+      focusDemande={focusNoeud}
+      actions={{
+        ouvrirPanneau: (id, champ) => setPanneau(champ ? { id, champ } : { id }),
+        ouvrirBranche: (id) => allerBranche(id),
+        remonter,
+      }}
+    />
+  );
+
+  return (
+    <div className={`ecran projet${large ? ' projet-large' : ''}`}>
+      <div className="barre-haute">
+        <BoutonIcone libelle={noeudRacine ? 'Remonter' : 'Retour aux projets'} sansCadre onClick={remonter}><IcRetour /></BoutonIcone>
+        <BoutonIcone libelle="Options du projet" sansCadre onClick={() => setMenu(true)}><IcSuite /></BoutonIcone>
+      </div>
+
+      {noeudRacine ? (
+        <EnTeteBranche doc={doc} meta={meta} arbre={arbre} racine={racine} allerBranche={allerBranche} />
+      ) : (
+        <EnTeteProjet doc={doc} meta={meta} cartouche={cartouche} basculer={() => setCartouche((c) => !c)} maintenant={maintenant} />
+      )}
+
+      {total > 0 && (
+        <div className="projet-section">
+          <CoteAvancement faites={faites} total={total} />
+        </div>
+      )}
+
+      {reorganiser && (
+        <div className="reorganiser-tete">
+          <span className="t-cote">Réorganiser</span>
+          <button type="button" className="t-label lien-action" onClick={() => setReorganiser(false)}>Terminé</button>
+        </div>
+      )}
+
+      {noeudRacine ? (
+        <div className="projet-section">{nomenclature}</div>
+      ) : (
+        blocs.map((b, i) => (
+          <section key={b.id} className="projet-section" aria-label={b.type === 'arbre' ? 'Arborescence' : undefined}>
+            {reorganiser && <CommandesBloc doc={doc} bloc={b} premier={i === 0} dernier={i === blocs.length - 1} onSupprime={(nom) => { annuler.stopCapturing(); setAvis(`${nom} supprimé`); }} />}
+            {b.type === 'arbre' && nomenclature}
+            {b.type === 'texte' && <BlocTexte bloc={b} autoFocus={nouveauBloc === b.id} />}
+            {b.type === 'echeance' && (
+              <BlocEcheance doc={doc} bloc={b} urgente={urgente?.cible === b.id} maintenant={maintenant} autoFocus={nouveauBloc === b.id} />
+            )}
+            {b.type === 'separateur' && <BlocSeparateur />}
+          </section>
+        ))
+      )}
+
+      <div className="barre-vue">
+        <div className="selecteur-vue" role="tablist" aria-label="Vue">
+          {(['page', 'graphe', 'frise'] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              role="tab"
+              aria-selected={route.vue === v}
+              className={`t-label${route.vue === v ? ' actif' : ''}`}
+              onClick={() => allerBranche(noeudRacine ? racine : null, v)}
+            >
+              {v === 'page' ? 'Page' : v === 'graphe' ? 'Graphe' : 'Frise'}
+            </button>
+          ))}
+        </div>
+        <BoutonIcone libelle="Ajouter un bloc" rouge onClick={() => setAjout(true)}><IcPlus /></BoutonIcone>
+      </div>
+
+      {route.vue !== 'page' && (
+        <div className="vue-a-venir" role="tabpanel">
+          <p className="t-cote">{route.vue === 'graphe' ? 'Graphe' : 'Frise'} : jalon 2.</p>
+          <button type="button" className="t-label lien-action" onClick={() => allerBranche(noeudRacine ? racine : null, 'page')}>Page</button>
+        </div>
+      )}
+
+      <Feuille ouverte={ajout} onFermer={() => setAjout(false)} titre="Ajouter">
+        <Choix icone={<IcArbre />} onClick={() => ajouterBloc('branche')}>{noeudRacine ? 'Élément' : 'Branche'}</Choix>
+        {!noeudRacine && (
+          <>
+            <Choix icone={<IcTexte />} onClick={() => ajouterBloc('texte')}>Texte</Choix>
+            <Choix icone={<IcEcheance />} onClick={() => ajouterBloc('echeance')}>Échéance</Choix>
+            <Choix icone={<IcSeparateur />} onClick={() => ajouterBloc('separateur')}>Séparateur</Choix>
+          </>
+        )}
+      </Feuille>
+
+      <Feuille ouverte={menu} onFermer={() => setMenu(false)} titre={meta.titre || 'Projet'}>
+        {!noeudRacine && <Choix onClick={() => { setMenu(false); setReorganiser(true); }}>Réorganiser les blocs</Choix>}
+        <Choix onClick={() => { modifierMeta(doc, 'epingle', !meta.epingle); setMenu(false); }}>{meta.epingle ? 'Désépingler' : 'Épingler'}</Choix>
+        <Choix onClick={() => { definirStatut(doc, meta.statut === 'archive' ? 'en-cours' : 'archive'); setMenu(false); }}>
+          {meta.statut === 'archive' ? 'Désarchiver' : 'Archiver'}
+        </Choix>
+        <Choix rouge onClick={() => { setMenu(false); setConfirmer(true); }}>Supprimer le projet</Choix>
+      </Feuille>
+
+      <Feuille ouverte={confirmer} onFermer={() => setConfirmer(false)} titre="Supprimer le projet">
+        <p className="t-corps confirmation">« {meta.titre} » et tout son contenu seront supprimés de cet appareil. Cette action est définitive.</p>
+        <div className="confirmation-actions">
+          <button type="button" className="bouton-secondaire t-label" onClick={() => setConfirmer(false)}>Garder</button>
+          <button type="button" className="bouton-danger t-label" onClick={() => {
+            void stockage.supprimerProjet(route.id).then(() => aller({ ecran: 'accueil' }, true));
+          }}>Supprimer</button>
+        </div>
+      </Feuille>
+
+      <PanneauNoeud
+        doc={doc}
+        annuler={annuler}
+        id={panneau?.id ?? null}
+        {...(panneau?.champ ? { champ: panneau.champ } : {})}
+        racine={racine}
+        onFermer={() => setPanneau(null)}
+        onOuvrirBranche={(id) => allerBranche(id)}
+        onSupprime={(t) => setAvis(`${t} supprimé`)}
+      />
+
+      {avis && <Avis texte={avis} action="Annuler" onAction={() => annuler.undo()} onFin={() => setAvis(null)} />}
+    </div>
+  );
+}
+
+function EnTeteProjet({ doc, meta, cartouche, basculer, maintenant }: {
+  doc: Y.Doc; meta: Meta; cartouche: boolean; basculer: () => void; maintenant: number;
+}) {
+  const ligne = [LIBELLES_TYPE_COURT[meta.type], meta.fin ? `fin ${dateCourte(meta.fin, maintenant)}` : null].filter(Boolean).join(' · ');
+  return (
+    <header className="projet-tete">
+      <Calque couleur={meta.couleur} calque={meta.calque} />
+      <h1>
+        <button type="button" className="t-titre projet-titre" aria-expanded={cartouche} aria-controls="cartouche" onClick={basculer}>
+          {meta.titre || 'Sans titre'}
+        </button>
+      </h1>
+      <p className="t-cote projet-ligne">{ligne}</p>
+      {cartouche && <Cartouche doc={doc} meta={meta} maintenant={maintenant} />}
+    </header>
+  );
+}
+
+function Cartouche({ doc, meta, maintenant }: { doc: Y.Doc; meta: Meta; maintenant: number }) {
+  const date = (ms: number) => (ms ? dateJour(aujourdhui(ms), maintenant) : '—');
+  return (
+    <div id="cartouche" className="cartouche">
+      <label className="cartouche-case cartouche-large">
+        <span className="t-label">Titre</span>
+        <input className="t-corps" value={meta.titre} onChange={(e) => definirTitre(doc, e.target.value)} />
+      </label>
+      <label className="cartouche-case">
+        <span className="t-label">Type</span>
+        <select className="t-corps" value={meta.type} onChange={(e) => modifierMeta(doc, 'type', e.target.value as TypeProjet)}>
+          {(['creatif', 'pro', 'perso', 'idees'] as const).map((t) => <option key={t} value={t}>{LIBELLES_TYPE[t]}</option>)}
+        </select>
+      </label>
+      <label className="cartouche-case">
+        <span className="t-label">Échéance finale</span>
+        <input type="date" className="t-corps" value={meta.fin ?? ''} onChange={(e) => modifierMeta(doc, 'fin', e.target.value || null)} />
+      </label>
+      <label className="cartouche-case">
+        <span className="t-label">Statut</span>
+        <select className="t-corps" value={meta.statut} onChange={(e) => definirStatut(doc, e.target.value as StatutProjet)}>
+          {(['idee', 'en-cours', 'pause', 'termine', 'archive'] as const).map((s) => <option key={s} value={s}>{LIBELLES_STATUT[s]}</option>)}
+        </select>
+      </label>
+      <label className="cartouche-case">
+        <span className="t-label">Calque {formaterCalque(meta.calque)}</span>
+        <select className="t-corps" value={meta.couleur} onChange={(e) => modifierMeta(doc, 'couleur', e.target.value as CleCouleur)}>
+          {COULEURS.map((c) => <option key={c} value={c}>{LIBELLES_COULEUR[c]}</option>)}
+        </select>
+      </label>
+      <div className="cartouche-case cartouche-petite">
+        <span className="t-label">Rév.</span>
+        <span className="t-cote">{String(meta.revision).padStart(2, '0')}</span>
+      </div>
+      <div className="cartouche-case cartouche-petite">
+        <span className="t-label">Créé</span>
+        <span className="t-cote">{date(meta.cree)}</span>
+      </div>
+      <div className="cartouche-case cartouche-petite">
+        <span className="t-label">Modifié</span>
+        <span className="t-cote">{date(meta.modifie)}</span>
+      </div>
+    </div>
+  );
+}
+
+function EnTeteBranche({ doc, meta, arbre, racine, allerBranche }: {
+  doc: Y.Doc; meta: Meta; arbre: ReturnType<typeof useArbre>; racine: string; allerBranche: (b: string | null) => void;
+}) {
+  const n = arbre.parId.get(racine)!;
+  const chemin = ancetres(arbre, racine);
+  const [note, setNote] = useState<Y.XmlFragment | null>(null);
+  useEffect(() => { setNote(noteDe(doc, racine)); }, [doc, racine]);
+  return (
+    <header className="projet-tete">
+      <nav className="fil-ariane t-cote" aria-label="Fil d'Ariane">
+        <button type="button" onClick={() => allerBranche(null)}>{meta.titre || 'Projet'}</button>
+        {chemin.map((id) => (
+          <span key={id}>
+            <span aria-hidden="true" className="fil-sep">/</span>
+            <button type="button" onClick={() => allerBranche(id)}>{arbre.parId.get(id)?.texte || 'Sans titre'}</button>
+          </span>
+        ))}
+      </nav>
+      <h1 className="t-titre projet-titre-branche">{n.texte || 'Sans titre'}</h1>
+      <div className="branche-note">
+        {note && (
+          <Suspense fallback={null}>
+            <EditeurRiche fragment={note} libelle="Note de la branche" placeholder="Note" />
+          </Suspense>
+        )}
+      </div>
+    </header>
+  );
+}
