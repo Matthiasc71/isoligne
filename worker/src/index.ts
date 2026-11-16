@@ -5,6 +5,7 @@ import {
 } from './espaces';
 import { compacter, envoyer, tetes, tirer, usage } from './synchro';
 import { unfurl } from './unfurl';
+import { abonner, clePublique, desabonner, essai, lirePlanning, listerAbonnements, poserPlanning, tournee } from './push';
 
 export type { Env };
 
@@ -33,11 +34,23 @@ export default {
       if (m === 'GET' && p === '/sync/projet') return await tirer(requete, env, url);
       if (m === 'POST' && p === '/sync/compacter') return await compacter(requete, env, url);
       if (m === 'GET' && p === '/usage') return await usage(requete, env);
+      if (m === 'GET' && p === '/push/cle') return await clePublique(requete, env);
+      if (m === 'GET' && p === '/push/abonnements') return await listerAbonnements(requete, env);
+      if (m === 'POST' && p === '/push/abonnements') return await abonner(requete, env);
+      if (m === 'DELETE' && (x = /^\/push\/abonnements\/([A-Za-z0-9_-]{16,43})$/.exec(p))) return await desabonner(requete, env, x[1]!);
+      if (m === 'GET' && p === '/push/planning') return await lirePlanning(requete, env);
+      if (m === 'POST' && p === '/push/planning') return await poserPlanning(requete, env);
+      if (m === 'POST' && p === '/push/essai') return await essai(requete, env);
       if (m === 'GET' && p === '/unfurl') return await unfurl(requete, env, url, ctx);
       return json(requete, env, { erreur: 'introuvable' }, 404);
     } catch (e) {
       if (e instanceof ErreurHttp) return json(requete, env, { erreur: e.message }, e.statut);
       return json(requete, env, { erreur: 'erreur interne' }, 500);
     }
+  },
+
+  /** Cron (toutes les 5 minutes) : envoi des rappels échus. */
+  async scheduled(_e: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(tournee(env).then(() => undefined));
   },
 } satisfies ExportedHandler<Env>;

@@ -5,7 +5,10 @@ cd "$(dirname "$0")"
 rm -rf .wrangler/state
 [ -f .dev.vars ] || printf 'SEL=sel-de-test-local-uniquement-0123\n' > .dev.vars
 npx wrangler d1 migrations apply isoligne --local > /dev/null
-npx wrangler dev --var ESPACES_MAX:1000 --port 8788 --ip 127.0.0.1 > .wrangler-integration.log 2>&1 &
+# Clé VAPID de test, générée à chaque passage (jamais versionnée), et faux service de push local.
+VAPID=$(node -e "crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign']).then(p=>crypto.subtle.exportKey('jwk',p.privateKey)).then(j=>process.stdout.write(JSON.stringify(j)))")
+npx wrangler dev --var ESPACES_MAX:1000 --var "VAPID_JWK:$VAPID" --var PUSH_TEST:http://127.0.0.1:8799 --test-scheduled \
+  --port 8788 --ip 127.0.0.1 > .wrangler-integration.log 2>&1 &
 PID=$!
 trap 'kill $PID 2>/dev/null || true' EXIT
 for _ in $(seq 1 60); do curl -s -o /dev/null http://127.0.0.1:8788/ && break; sleep 1; done
@@ -14,3 +17,6 @@ WORKER_URL=http://127.0.0.1:8788 npx vitest run test/integration.test.ts
 npx wrangler d1 execute isoligne --local --command "DELETE FROM limites" > /dev/null
 # De bout en bout : deux vrais services de synchro de l'app contre ce Worker.
 (cd .. && WORKER_URL=http://127.0.0.1:8788 npx vitest run tests/unit/synchro-reelle.test.ts)
+# Notifications : planning, Cron et signature VAPID, jusqu'à un faux service de push.
+npx wrangler d1 execute isoligne --local --command "DELETE FROM limites" > /dev/null
+(cd .. && WORKER_URL=http://127.0.0.1:8788 npx vitest run tests/unit/push-reel.test.ts)

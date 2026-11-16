@@ -6,6 +6,12 @@ export interface Env {
   SEL: string;
   /** Nombre maximal d'espaces : « 1 » en production (instance personnelle). */
   ESPACES_MAX?: string;
+  /** Paire VAPID (JWK privée, wrangler secret) ; la clé publique s'en déduit. */
+  VAPID_JWK?: string;
+  /** « sub » des jetons VAPID (adresse https ou mailto). */
+  VAPID_SUJET?: string;
+  /** Tests locaux uniquement : préfixe d'un faux service de push (http://127.0.0.1:…). */
+  PUSH_TEST?: string;
 }
 
 /** Instance personnelle : au-delà de ESPACES_MAX espaces (1 par défaut), plus aucune création. */

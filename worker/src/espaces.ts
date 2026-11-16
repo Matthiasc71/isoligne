@@ -59,7 +59,11 @@ export async function listerAppareils(r: Request, env: Env): Promise<Response> {
 
 export async function revoquer(r: Request, env: Env, id: string): Promise<Response> {
   const moi = await authentifier(r, env);
-  await env.DB.prepare('UPDATE appareils SET revoque = 1 WHERE id = ?1 AND espace = ?2').bind(id, moi.espace).run();
+  await env.DB.batch([
+    env.DB.prepare('UPDATE appareils SET revoque = 1 WHERE id = ?1 AND espace = ?2').bind(id, moi.espace),
+    // Un appareil révoqué ne reçoit plus de notifications.
+    env.DB.prepare('DELETE FROM abonnements WHERE appareil = ?1 AND espace = ?2').bind(id, moi.espace),
+  ]);
   return json(r, env, { ok: true });
 }
 
