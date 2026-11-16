@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import type * as Y from 'yjs';
 import { useArbre, useProjet, useStockage, useVersion } from '../app/contexte';
 import { aller, type Route, type Vue } from '../app/route';
@@ -17,7 +18,11 @@ import { Nomenclature } from '../outliner/Nomenclature';
 import { PanneauNoeud } from '../outliner/PanneauNoeud';
 import { Avis, BoutonIcone, Choix, Feuille } from '../ui/ui';
 import { BlocEcheance, BlocSeparateur, BlocTexte, CommandesBloc } from './Blocs';
+import { Separateur } from '../ui/Separateur';
+import type { Disposition } from '../graph/liens';
 import './projet.css';
+
+const Graphe = lazy(() => import('../graph/Graphe').then((m) => ({ default: m.Graphe })));
 
 const EditeurRiche = lazy(() => import('../editor/EditeurRiche'));
 
@@ -52,6 +57,13 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
   const [avis, setAvis] = useState<string | null>(null);
   const [nouveauBloc, setNouveauBloc] = useState<string | null>(null);
   const [focusNoeud, setFocusNoeud] = useState<string | null>(null);
+
+  // Disposition du graphe : mémorisée (iPhone : Radial, Arbre ou Libre ; la Frise a sa propre vue).
+  const dispositionMobile = useLiveQuery(() => stockage.reglage<Disposition>('disposition', 'radial'), [stockage]) ?? 'radial';
+  const dispositionOrdi = useLiveQuery(() => stockage.reglage<Disposition>('dispositionOrdi', 'radial'), [stockage]) ?? 'radial';
+  const largeurGraphe = useLiveQuery(() => stockage.reglage<number>('largeurGraphe', 560), [stockage]) ?? 560;
+  const [largeurTemp, setLargeurTemp] = useState<number | null>(null);
+  const disposition: Disposition = route.vue === 'frise' ? 'frise' : large ? dispositionOrdi : dispositionMobile;
 
   const allerBranche = useCallback((branche: string | null, vue: Vue = route.vue) => {
     aller({ ecran: 'projet', id: route.id, branche, vue });
@@ -112,7 +124,56 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
     />
   );
 
-  return (
+  const changerDisposition = (d: Disposition) => {
+    const branche = noeudRacine ? racine : null;
+    if (large) {
+      void stockage.poserReglage('dispositionOrdi', d);
+      if (route.vue !== 'page') allerBranche(branche, 'page');
+    } else if (d === 'frise') {
+      aller({ ecran: 'projet', id: route.id, branche, vue: 'frise' }, true);
+    } else {
+      void stockage.poserReglage('disposition', d);
+      aller({ ecran: 'projet', id: route.id, branche, vue: 'graphe' }, true);
+    }
+  };
+
+  const graphe = (
+    <Suspense fallback={null}>
+      <Graphe
+        doc={doc}
+        annuler={annuler}
+        centre={racine}
+        disposition={disposition}
+        onDisposition={changerDisposition}
+        titre={meta.titre || 'Sans titre'}
+        couleur={meta.couleur}
+        calque={meta.calque}
+        urgente={urgente?.genre === 'noeud' ? urgente.cible : null}
+        large={large}
+        onRetour={() => allerBranche(noeudRacine ? racine : null, 'page')}
+        ouvrirPanneau={(id) => setPanneau({ id })}
+        ouvrirBranche={(id) => allerBranche(id)}
+      />
+    </Suspense>
+  );
+
+  const communs = (
+    <>
+      <PanneauNoeud
+        doc={doc}
+        annuler={annuler}
+        id={panneau?.id ?? null}
+        {...(panneau?.champ ? { champ: panneau.champ } : {})}
+        racine={racine}
+        onFermer={() => setPanneau(null)}
+        onOuvrirBranche={(id) => allerBranche(id)}
+        onSupprime={(t) => setAvis(`${t} supprimé`)}
+      />
+      {avis && <Avis texte={avis} action="Annuler" onAction={() => annuler.undo()} onFin={() => setAvis(null)} />}
+    </>
+  );
+
+  const page = (
     <div className={`ecran projet${large ? ' projet-large' : ''}`}>
       <div className="barre-haute">
         <BoutonIcone libelle={noeudRacine ? 'Remonter' : 'Retour aux projets'} sansCadre onClick={remonter}><IcRetour /></BoutonIcone>
@@ -155,7 +216,7 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
       )}
 
       <div className="barre-vue">
-        <div className="selecteur-vue" role="tablist" aria-label="Vue">
+        {!large && <div className="selecteur-vue" role="tablist" aria-label="Vue">
           {(['page', 'graphe', 'frise'] as const).map((v) => (
             <button
               key={v}
@@ -168,16 +229,9 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
               {v === 'page' ? 'Page' : v === 'graphe' ? 'Graphe' : 'Frise'}
             </button>
           ))}
-        </div>
+        </div>}
         <BoutonIcone libelle="Ajouter un bloc" rouge onClick={() => setAjout(true)}><IcPlus /></BoutonIcone>
       </div>
-
-      {route.vue !== 'page' && (
-        <div className="vue-a-venir" role="tabpanel">
-          <p className="t-cote">{route.vue === 'graphe' ? 'Graphe' : 'Frise'} : jalon 2.</p>
-          <button type="button" className="t-label lien-action" onClick={() => allerBranche(noeudRacine ? racine : null, 'page')}>Page</button>
-        </div>
-      )}
 
       <Feuille ouverte={ajout} onFermer={() => setAjout(false)} titre="Ajouter">
         <Choix icone={<IcArbre />} onClick={() => ajouterBloc('branche')}>{noeudRacine ? 'Élément' : 'Branche'}</Choix>
@@ -209,18 +263,25 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
         </div>
       </Feuille>
 
-      <PanneauNoeud
-        doc={doc}
-        annuler={annuler}
-        id={panneau?.id ?? null}
-        {...(panneau?.champ ? { champ: panneau.champ } : {})}
-        racine={racine}
-        onFermer={() => setPanneau(null)}
-        onOuvrirBranche={(id) => allerBranche(id)}
-        onSupprime={(t) => setAvis(`${t} supprimé`)}
-      />
+    </div>
+  );
 
-      {avis && <Avis texte={avis} action="Annuler" onAction={() => annuler.undo()} onFin={() => setAvis(null)} />}
+  if (!large && route.vue !== 'page') return <>{graphe}{communs}</>;
+  if (!large) return <>{page}{communs}</>;
+  const lg = largeurTemp ?? largeurGraphe;
+  return (
+    <div className="projet-colonnes" style={{ gridTemplateColumns: `minmax(380px, 1fr) 9px ${lg}px` }}>
+      <div className="colonne-page">{page}</div>
+      <Separateur
+        libelle="Largeur du graphe"
+        valeur={lg}
+        min={360}
+        max={1100}
+        sens={-1}
+        onChange={(v) => { setLargeurTemp(v); void stockage.poserReglage('largeurGraphe', v); }}
+      />
+      <div className="colonne-graphe">{graphe}</div>
+      {communs}
     </div>
   );
 }

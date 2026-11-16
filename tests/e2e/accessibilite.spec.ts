@@ -34,6 +34,12 @@ for (const mode of ['dark', 'light'] as const) {
     await page.getByRole('tree').getByRole('button', { name: /^1\b/ }).click();
     await verifier('panneau');
     await page.getByRole('dialog').getByRole('button', { name: 'Fermer' }).click();
+    if (test.info().project.name.startsWith('iphone')) {
+      await page.getByRole('tab', { name: 'Graphe' }).click();
+      await page.locator('.react-flow__node').first().waitFor();
+      await verifier('graphe');
+      await page.getByRole('button', { name: 'Retour à la page' }).click();
+    }
     await page.goto('./#/');
     await verifier('accueil');
   });

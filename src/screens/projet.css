@@ -244,3 +244,26 @@
   background: var(--redline);
   color: var(--fond);
 }
+
+/* Ordinateur : page et graphe côte à côte */
+.projet-colonnes {
+  display: grid;
+  height: 100%;
+  min-height: 0;
+}
+.colonne-page {
+  overflow: auto;
+  min-width: 0;
+}
+.colonne-graphe {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.colonne-graphe > .graphe {
+  flex: 1;
+}
+.projet-large .barre-vue {
+  justify-content: flex-end;
+}

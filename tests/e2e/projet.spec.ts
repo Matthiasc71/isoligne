@@ -62,11 +62,11 @@ test.describe('page projet', () => {
     await page.keyboard.press('Enter');
     await page.keyboard.type('Chapitre 1');
     await page.keyboard.press('Tab');
-    await page.getByLabel('1 Rédaction').focus();
+    await page.getByRole('tree').getByLabel('1 Rédaction').focus();
     await page.keyboard.press('ControlOrMeta+ArrowRight');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^rédaction$/i);
     await expect(page.getByRole('navigation', { name: "Fil d'Ariane" })).toContainText('Mémoire');
-    await expect(page.getByLabel('1.1 Chapitre 1')).toBeVisible();
+    await expect(page.getByRole('tree').getByLabel('1.1 Chapitre 1')).toBeVisible();
     await page.getByRole('navigation', { name: "Fil d'Ariane" }).getByRole('button', { name: 'Mémoire' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toContainText(/mémoire/i);
   });

@@ -196,7 +196,7 @@ export function frise(arbre: Arbre, centre: string = RACINE, aujourdhui: DateLoc
   const jours = dates2.map((n) => numeroJour(n.echeance!));
   const min = Math.min(t0, ...jours) - 3;
   const max = Math.max(t0 + 14, ...jours) + 3;
-  const pxJour = Math.max(4, Math.min(48, largeurCible / (max - min)));
+  const pxJour = Math.max(6, Math.min(48, largeurCible / (max - min)));
   const debut = dateDuJour(min);
 
   // Couloirs et sous-lignes.
@@ -216,7 +216,7 @@ export function frise(arbre: Arbre, centre: string = RACINE, aujourdhui: DateLoc
       finsDeLigne[ligne] = x + LARGEUR_ETIQUETTE;
       noeuds.push({
         id: n.id, parent: null, profondeur: 1, feuille: !(arbre.enfants.get(n.id)?.length),
-        epingle: false, x, y: y + COULOIR / 2 + ligne * (COULOIR * 0.75),
+        epingle: false, x, y: y + COULOIR / 2 + 8 + ligne * (COULOIR * 0.75),
       });
     }
     const hauteur = COULOIR + (finsDeLigne.length - 1) * COULOIR * 0.75;

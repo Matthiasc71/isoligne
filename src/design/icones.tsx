@@ -95,3 +95,21 @@ export const IcSeparateur = (p: P) => (
 export const IcGraphe = (p: P) => (
   <Icone {...p}><path d="M9.75 9.75h4.5v4.5h-4.5zM4.75 4.75h2.5v2.5h-2.5zM16.75 4.75h2.5v2.5h-2.5zM10.75 17.75h2.5v2.5h-2.5zM7 7l3 3M17 7l-3 3M12 14.25v3.5" /></Icone>
 );
+export const IcRelier = (p: P) => (
+  <Icone {...p}><path d="M4.75 4.75h4.5v4.5h-4.5zM14.75 14.75h4.5v4.5h-4.5z" /><path d="M9.25 9.25C14 9.5 14.5 10 14.75 14.75" strokeDasharray="2 2" /></Icone>
+);
+export const IcReplier = (p: P) => (
+  <Icone {...p}><path d="M5.75 5.75h12.5v12.5H5.75zM9 12h6" /></Icone>
+);
+export const IcDeplier = (p: P) => (
+  <Icone {...p}><path d="M5.75 5.75h12.5v12.5H5.75zM9 12h6M12 9v6" /></Icone>
+);
+export const IcExporter = (p: P) => (
+  <Icone {...p}><path d="M8.5 9.5H5.75v9.75h12.5V9.5H15.5M12 4.5v10M8.75 7.75 12 4.5l3.25 3.25" /></Icone>
+);
+export const IcReorganiser = (p: P) => (
+  <Icone {...p}><path d="M5 12a7 7 0 0 1 12.2-4.7M19 12a7 7 0 0 1-12.2 4.7M17.5 4v3.5H14M6.5 20v-3.5H10" /></Icone>
+);
+export const IcSuivant = (p: P) => (
+  <Icone {...p}><path d="M9.5 6.5 15 12l-5.5 5.5" /></Icone>
+);

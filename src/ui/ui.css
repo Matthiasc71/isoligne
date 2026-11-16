@@ -155,3 +155,28 @@
   display: block;
   margin-bottom: 8px;
 }
+
+/* Poignée entre deux colonnes */
+.separateur {
+  position: relative;
+  cursor: col-resize;
+  touch-action: none;
+}
+.separateur::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 4px;
+  width: 1px;
+  background: var(--trait-2);
+}
+.separateur:hover::before,
+.separateur:focus-visible::before {
+  width: 2px;
+  left: 3.5px;
+  background: var(--trait);
+}
+.separateur:focus-visible {
+  outline: none;
+}

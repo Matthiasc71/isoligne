@@ -1,0 +1,360 @@
+/* Graphe : plan de construction (DESIGN.md, brief design/briefs/graphe.md) */
+
+.graphe {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.graphe-large {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  height: 100%;
+  padding: 0;
+}
+
+.graphe-tete {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 44px calc(var(--marge) - 12px) 8px;
+}
+.graphe-titre {
+  font-size: var(--taille-cote);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.onglets {
+  display: flex;
+  gap: 24px;
+  padding: 0 var(--marge);
+  border-bottom: 1px solid var(--grille-majeure);
+}
+.graphe-large .onglets {
+  padding-top: 28px;
+}
+.onglet {
+  min-height: var(--cible);
+  padding: 0;
+  color: var(--trait-2);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.onglet.actif {
+  color: var(--trait);
+  border-bottom-color: var(--trait);
+}
+
+.toile {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.toile:focus-visible {
+  outline-offset: -2px;
+}
+
+/* React Flow : on n'utilise que la base, tout le reste vient des tokens. */
+.toile .react-flow {
+  background: transparent;
+  --xy-node-border-radius: 0;
+}
+.toile .react-flow__node {
+  cursor: pointer;
+  border-radius: 0;
+}
+.toile .react-flow__node.dragging {
+  cursor: grabbing;
+}
+.toile .react-flow__viewport-portal {
+  position: absolute;
+  z-index: 0;
+}
+.toile .react-flow__nodes {
+  z-index: 1;
+}
+
+.fond-graphe {
+  position: absolute;
+  overflow: visible;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+.cercle-construction {
+  fill: none;
+  stroke: var(--trait-2);
+  stroke-dasharray: 2 5;
+  stroke-opacity: 0.55;
+}
+.axe-construction {
+  stroke: var(--grille-majeure);
+}
+.arete {
+  fill: none;
+  stroke: var(--trait);
+  stroke-opacity: 0.75;
+  stroke-width: 1;
+}
+.arete-nouvelle {
+  stroke-dasharray: 1;
+  animation: trace-svg var(--duree-trait) var(--courbe) both;
+  --longueur: 1;
+}
+.lien-libre {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.lien-zone {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 18;
+}
+.lien-trace {
+  fill: none;
+  stroke: var(--calque-courant, var(--redline));
+  stroke-width: 1.25;
+  stroke-dasharray: 4 4;
+}
+.lien-trait .lien-trace {
+  stroke-dasharray: none;
+}
+.lien-texte {
+  fill: var(--trait-2);
+}
+
+/* Frise */
+.couloir {
+  stroke: var(--grille-majeure);
+}
+.etiquette-couloir {
+  fill: var(--trait-2);
+  /* Détourage couleur du papier : l'étiquette reste lisible sur le trait d'aujourd'hui. */
+  paint-order: stroke;
+  stroke: var(--fond);
+  stroke-width: 6px;
+  stroke-linejoin: round;
+}
+.axe-temps {
+  stroke: var(--trait);
+}
+.graduation {
+  stroke: var(--trait-2);
+}
+.graduation-texte {
+  fill: var(--trait-2);
+}
+.aujourdhui {
+  stroke: var(--redline);
+}
+.aujourdhui-texte {
+  fill: var(--redline);
+}
+.frise-sans-date,
+.frise-vide {
+  position: absolute;
+  left: var(--marge);
+  bottom: 12px;
+  margin: 0;
+  pointer-events: none;
+}
+.frise-vide {
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+/* Nœuds */
+.g-centre {
+  position: relative;
+  display: grid;
+  justify-items: center;
+}
+.g-centre-cercle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 1px solid var(--trait);
+  border-radius: 50%;
+  background: var(--fond);
+}
+.g-centre-libelle {
+  position: absolute;
+  top: 64px;
+  white-space: nowrap;
+}
+
+.g-branche {
+  position: relative;
+  padding: 6px 10px;
+  border: 1px solid var(--trait);
+  background: var(--fond);
+  white-space: nowrap;
+}
+.g-branche.g-fait {
+  border-color: var(--trait-2);
+  color: var(--trait-2);
+}
+.g-date-sous {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+}
+
+.g-feuille {
+  position: relative;
+  width: 9px;
+  height: 9px;
+}
+.g-carre {
+  display: block;
+  width: 9px;
+  height: 9px;
+  background: var(--trait);
+}
+.g-urgent .g-carre {
+  background: var(--redline);
+}
+.g-fait .g-carre {
+  background: var(--fond);
+  outline: 1px solid var(--trait-2);
+  outline-offset: -1px;
+}
+.g-fait .g-carre svg {
+  display: block;
+  stroke: var(--trait-2);
+  stroke-width: 1;
+}
+.g-fait .g-etiquette {
+  color: var(--trait-2);
+}
+.g-reperes-feuille {
+  position: absolute;
+  inset: -9px;
+  pointer-events: none;
+}
+.g-etiquette {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+.g-droite { left: 20px; top: 50%; transform: translateY(-50%); align-items: flex-start; }
+.g-gauche { right: 20px; top: 50%; transform: translateY(-50%); align-items: flex-end; }
+.g-haut { bottom: 20px; left: 50%; transform: translateX(-50%); align-items: center; }
+.g-bas { top: 20px; left: 50%; transform: translateX(-50%); align-items: center; }
+.g-date {
+  font-weight: 700;
+}
+
+.origine-relier {
+  position: absolute;
+  inset: -6px;
+  border: 1px dashed var(--trait);
+}
+.g-branche > .reperes,
+.g-centre-cercle > .reperes {
+  inset: -7px;
+}
+
+.renommer {
+  min-width: 4ch;
+  padding: 0;
+  border-bottom: 1px solid var(--trait);
+  background: var(--fond);
+}
+
+/* Panneau de sélection et barre d'outils */
+.selection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 12px var(--marge) 0;
+  padding: 12px 12px 12px 16px;
+  border: 1px solid var(--trait);
+  background: var(--fond);
+}
+.selection-urgente {
+  border-color: var(--redline);
+}
+.selection-texte {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.selection-texte > .t-corps {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.graphe-consigne {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px var(--marge) 0;
+  min-height: var(--cible);
+}
+.outils-graphe {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px var(--marge) 16px;
+  border-top: 1px solid var(--grille-majeure);
+  background: var(--fond);
+  margin-top: 12px;
+}
+.graphe-large .outils-graphe {
+  justify-content: flex-start;
+  padding-bottom: 24px;
+}
+.outils-graphe .bouton-icone:disabled {
+  color: var(--trait-2);
+  border-color: var(--grille-majeure);
+}
+
+/* Mini-carte (ordinateur) */
+.minicarte {
+  position: absolute;
+  right: 16px;
+  bottom: 32px;
+  z-index: 5;
+  border: 1px solid var(--trait-2);
+  background: var(--fond);
+  cursor: pointer;
+}
+.minicarte-point {
+  fill: var(--trait-2);
+}
+.minicarte-vue {
+  fill: none;
+  stroke: var(--trait);
+}
+
+/* Mention de la bibliothèque (licence MIT, demande des auteurs) : discrète. */
+.toile .react-flow__attribution {
+  background: transparent;
+  padding: 2px 6px;
+  font-family: var(--police-mono);
+  font-size: var(--taille-cote);
+}
+.toile .react-flow__attribution a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+  color: var(--trait-2);
+  text-decoration: none;
+}
