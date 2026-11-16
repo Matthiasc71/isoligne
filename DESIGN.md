@@ -26,6 +26,7 @@ colors:
   calque-rose-jour: "#C24D6A"
   calque-craie-nuit: "#E6E6E6"
   calque-craie-jour: "#5A5F66"
+  encre-impression: "#000000"
 typography:
   display:
     fontFamily: "'Archivo Variable', 'Arial Narrow', sans-serif"
@@ -255,6 +256,13 @@ Implémentés dans `src/design/signature.tsx` (signature), `src/ui/ui.tsx` (prim
 
 ### Lien
 - Une ligne en body soulignée d'un trait de cote (le titre, ou l'adresse), une ligne grise en cote (le site). « ··· » ouvre le détail (adresse, description, copier, modifier, supprimer). Aucune image.
+
+### Synchro (Réglages)
+- **État** : une ligne en cote (« À jour · il y a 2 min ») ; redline seulement si révoqué ou en erreur.
+- **Appareils** : lignes body + cote (« cet appareil », « vu le… »), « Révoquer » en label redline, confirmé dans une feuille.
+- **Code d'appairage** et **empreinte** : en display B612 Mono, groupés (« 7K2M QX9P », « 313 597 »).
+- **Clé de secours** : 13 groupes de 4 dans une grille de cartouche à 4 colonnes, la 14ᵉ case (3 colonnes) porte « Isoligne · clé de secours ». À l'impression, seul ce bloc sort, à l'encre noire (`encre-impression`) sur papier blanc.
+- **Témoin** : carré redline de 7 px sur « ··· » de l'accueil, uniquement en cas de problème durable ; le libellé VoiceOver le dit aussi.
 
 ## Do's and Don'ts
 

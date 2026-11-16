@@ -40,5 +40,7 @@ jobs:
         run: npx playwright install --with-deps chromium webkit
       - name: Tests de bout en bout (iPhone WebKit, iPhone et ordinateur Chromium)
         run: npm run e2e
+      - name: Synchro de bout en bout (deux navigateurs, Worker et D1 locaux)
+        run: npm run e2e:synchro
       - name: Build
         run: npm run build

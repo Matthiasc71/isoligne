@@ -5,6 +5,7 @@ import { aller } from '../app/route';
 import { appliquerTheme, type Theme } from '../app/theme';
 import { IcRetour } from '../design/icones';
 import { BoutonIcone, Segments } from '../ui/ui';
+import { SectionSynchro } from './Synchro';
 import './secondaires.css';
 
 const LICENCES = [
@@ -43,6 +44,11 @@ export default function Reglages() {
         />
       </section>
 
+      <section className="reglage" aria-labelledby="r-synchro">
+        <h2 id="r-synchro" className="t-label">Synchro</h2>
+        <SectionSynchro />
+      </section>
+
       <section className="reglage" aria-labelledby="r-donnees">
         <h2 id="r-donnees" className="t-label">Données sur cet appareil</h2>
         <p className="t-cote">
@@ -52,7 +58,7 @@ export default function Reglages() {
 
       <section className="reglage" aria-labelledby="r-apropos">
         <h2 id="r-apropos" className="t-label">À propos</h2>
-        <p className="t-cote">Isoligne {__VERSION__} · code libre (MIT) · aucune donnée envoyée</p>
+        <p className="t-cote">Isoligne {__VERSION__} · code libre (MIT) · données chiffrées sur l’appareil avant tout envoi</p>
         <ul className="licences t-cote">
           {LICENCES.map((l) => <li key={l}>{l}</li>)}
         </ul>

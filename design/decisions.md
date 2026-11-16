@@ -60,3 +60,14 @@ Requête : « outil de projets personnel, style blueprint/cyanotype, très épur
 - **Croquis au format fixe 2,5:1**, dessinés sur une planche en plein écran.
 - **Aperçus de liens en texte seul** : titre et site dans la page ; la description n'apparaît que dans le détail (une seule ligne grise par élément).
 - **Worker : wrangler 4.156.2 et workers-types du 02.11.2026** (au moins deux semaines). Journaux Cloudflare désactivés (`observability.enabled: false`) : aucune adresse consultée n'est conservée.
+
+## 16.11.2026 : synchro (jalon 4)
+- **Pas de QR code d'appairage** (validé par le propriétaire), contrairement à la spec §4.2. Sur iOS, scanner un QR avec l'appareil photo ouvre Safari, et une app de l'écran d'accueil ne partage aucune donnée avec Safari (WebKit, bug 181849). Le code de 8 caractères, suivi de l'empreinte à 6 chiffres, est le seul chemin.
+- **Secret maître unique** : il donne par dérivation la clé des données, l'identifiant de l'espace et le jeton de secours. La clé de secours (52 caractères et 2 de contrôle) restaure tout. Elle est affichée et imprimable, jamais enregistrée ailleurs que sur les appareils.
+- **File d'envoi remplacée par un vecteur d'état confirmé** : un renvoi en double ne coûte rien, et un envoi interrompu repart de lui-même au cycle suivant.
+- **Blocs chiffrés stockés en base64 (texte)** dans D1 : D1 relit un BLOB sous forme de tableau de nombres, trop coûteux à convertir en 10 ms de CPU.
+
+## Clé de secours : 13 groupes, contrôle sur 4 bits (16.11.2026)
+- Le brief annonce 13 groupes de 4. Avec 2 caractères de contrôle, la clé en faisait 13 et demi.
+- Les 256 bits du secret occupent 51,2 caractères base32 : le 52ᵉ porte 4 bits libres, qui servent de contrôle (SHA-256). 13 groupes pile.
+- Une faute de frappe est détectée localement 15 fois sur 16. Sinon, le serveur refuse la clé : elle ne correspond à aucun espace.

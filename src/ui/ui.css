@@ -180,3 +180,42 @@
 .separateur:focus-visible {
   outline: none;
 }
+
+/* Actions partagées (projet, réglages) */
+.lien-action {
+  min-height: var(--cible);
+  padding: 0 4px;
+}
+/* Confirmation */
+.confirmation {
+  margin-bottom: 28px;
+  max-width: 48ch;
+}
+.confirmation-actions {
+  display: flex;
+  gap: 12px;
+}
+.bouton-secondaire,
+.bouton-danger {
+  flex: 1;
+  min-height: var(--cible);
+  border: 1px solid var(--trait-2);
+}
+.bouton-danger {
+  border-color: var(--redline);
+  background: var(--redline);
+  color: var(--fond);
+}
+
+/* Témoin de synchro : petit carré redline, seulement en cas de problème durable. */
+.avec-temoin {
+  position: relative;
+}
+.temoin-synchro {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+  width: 7px;
+  height: 7px;
+  background: var(--redline);
+}

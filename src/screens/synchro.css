@@ -1,0 +1,90 @@
+.synchro-ligne {
+  margin: 4px 0 12px;
+}
+.appareils {
+  margin-bottom: 8px;
+  border-top: 1px solid var(--grille-majeure);
+}
+.appareil {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: var(--ligne);
+  border-bottom: 1px solid var(--grille-majeure);
+}
+.appareil-texte {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.empreinte,
+.code-appairage {
+  letter-spacing: 0.12em;
+  font-family: var(--police-mono);
+  font-weight: 400;
+  font-stretch: 100%;
+  text-transform: none;
+}
+.champ-code {
+  font-family: var(--police-mono);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.champ-cle {
+  resize: none;
+  text-transform: uppercase;
+}
+.cle-secours {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--trait);
+  border-left: 1px solid var(--trait);
+  color: var(--trait);
+}
+.cle-secours span {
+  padding: 10px 8px;
+  border-right: 1px solid var(--trait);
+  border-bottom: 1px solid var(--trait);
+  text-align: center;
+  font-size: var(--taille-corps);
+  letter-spacing: 0.08em;
+}
+.cle-secours .cle-cartouche {
+  grid-column: span 3;
+  text-align: left;
+  letter-spacing: 0.04em;
+  color: var(--trait-2);
+}
+.form-ajout .confirmation-actions > * {
+  flex: 1;
+}
+
+/* Impression : seule la clé de secours, en noir sur papier blanc (bloc rendu sous <body>). */
+.impression-cle {
+  display: none;
+}
+@media print {
+  body > :not(.impression-cle) {
+    display: none !important;
+  }
+  .impression-cle {
+    display: block;
+    width: 15cm;
+    margin: 2cm;
+    color: #000;
+    font-family: var(--police-mono);
+    font-size: 11pt;
+  }
+  .impression-cle p {
+    margin: 0 0 0.6cm;
+  }
+  .impression-cle .cle-secours,
+  .impression-cle .cle-secours span {
+    color: #000;
+    border-color: #000;
+  }
+  .impression-cle .cle-secours {
+    margin-bottom: 0.6cm;
+  }
+}

@@ -222,3 +222,20 @@ isoligne/
 - Reporté :
   - déploiement du Worker et jeton d'appareil sur `/unfurl` (jalon 4) ;
   - stylet et pression sur appareil réel (jalon 7).
+
+### Jalon 4 : synchro (livré le 16.11.2026, déploiement en cours)
+- Fait :
+  - chiffrement de bout en bout : secret maître, clé d'espace, AES-256-GCM ;
+  - appairage par code de 8 caractères et empreinte à 6 chiffres (ECDH P-256) ;
+  - clé de secours (13 groupes, affichage, copie, impression) et restauration ;
+  - Worker de synchro + D1 : espace, appareils, révocation, envoi par parties, têtes, tirage paginé, compactage, jauge d'usage ;
+  - moteur par vecteur d'état confirmé : une modification n'est considérée comme partie qu'après accusé de réception ;
+  - section Synchro des Réglages, témoin redline sur l'accueil, « Quitter l'espace » après révocation ;
+  - `/unfurl` exige désormais un jeton d'appareil.
+- Tests : convergence hors ligne (unitaires et propriétés), intégration avec une D1 locale, parcours complet à deux navigateurs (`npm run e2e:synchro`, en CI).
+- Rapport : `design/rapports/jalon-4/rapport.md` (critique 33/40, audit 18/20, 0 anti-pattern, 0 violation axe).
+- Reporté :
+  - bouton « Nouveau code » après expiration ;
+  - mesure du CPU réel du Worker après déploiement ;
+  - essai sur iPhone réel (jalon 7).
+

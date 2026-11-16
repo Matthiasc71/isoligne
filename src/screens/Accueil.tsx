@@ -15,6 +15,7 @@ import {
 } from '../time/dates';
 import { BoutonIcone, Choix, Feuille, Segments } from '../ui/ui';
 import { useAppuiLong } from '../ui/gestes';
+import { problemeDurable, useEtatSynchro } from '../sync/contexte';
 import './accueil.css';
 
 type Tri = 'echeance' | 'recent' | 'nom';
@@ -36,6 +37,7 @@ export function Accueil({ archives = false, compact = false }: { archives?: bool
   const stockage = useStockage();
   const route = useRoute();
   const maintenant = useMaintenant();
+  const temoin = problemeDurable(useEtatSynchro(), maintenant);
   const [options, setOptions] = useState(false);
   const [projetActions, setProjetActions] = useState<ResumeProjet | null>(null);
 
@@ -75,8 +77,12 @@ export function Accueil({ archives = false, compact = false }: { archives?: bool
             <span className="visuellement-cache">Projets, </span>{enteteDuJour(maintenant)}
           </Titre>
         )}
-        <BoutonIcone libelle="Tri, filtres et réglages" sansCadre={!filtreActif} actif={filtreActif} onClick={() => setOptions(true)}>
+        <BoutonIcone
+          libelle={temoin ? 'Tri, filtres et réglages · synchro à vérifier' : 'Tri, filtres et réglages'}
+          className="avec-temoin" sansCadre={!filtreActif} actif={filtreActif} onClick={() => setOptions(true)}
+        >
           <IcSuite />
+          {temoin && <span className="temoin-synchro" aria-hidden="true" />}
         </BoutonIcone>
       </header>
 

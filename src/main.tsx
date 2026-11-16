@@ -9,8 +9,12 @@ import { Stockage } from './data/stockage';
 import { FournisseurStockage } from './app/contexte';
 import { appliquerTheme, type Theme } from './app/theme';
 import { App } from './app/App';
+import { ServiceSynchro } from './sync/service';
+import { FournisseurSynchro } from './sync/contexte';
 
 const stockage = new Stockage();
+const synchro = new ServiceSynchro(stockage);
+void stockage.espacePret.then(() => synchro.charger());
 
 // Protège les données locales de l'éviction automatique du navigateur.
 void navigator.storage?.persist?.();
@@ -42,7 +46,9 @@ if (import.meta.env.PROD) {
 createRoot(document.getElementById('app')!).render(
   <StrictMode>
     <FournisseurStockage value={stockage}>
-      <App />
+      <FournisseurSynchro value={synchro}>
+        <App />
+      </FournisseurSynchro>
     </FournisseurStockage>
   </StrictMode>,
 );

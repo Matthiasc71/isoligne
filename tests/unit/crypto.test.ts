@@ -66,11 +66,20 @@ describe('clé de secours', () => {
   it('aller-retour, saisie tolérante, et fautes de frappe détectées', async () => {
     const m = aleatoire(32);
     const cle = await cleDeSecours(m);
-    expect(cle).toMatch(/^([0-9A-Z]{4}-){13}[0-9A-Z]{2}$/);
+    expect(cle).toMatch(/^([0-9A-Z]{4}-){12}[0-9A-Z]{4}$/);
     expect(await lireCleDeSecours(cle)).toEqual(m);
     expect(await lireCleDeSecours(cle.toLowerCase().replace(/-/g, ' '))).toEqual(m);
-    const faute = cle.slice(0, 5) + (cle[5] === 'A' ? 'B' : 'A') + cle.slice(6);
-    expect(await lireCleDeSecours(faute)).toBeNull();
+    // Une faute de frappe : jamais le bon secret, et rejetée localement dans ~15 cas sur 16.
+    let acceptees = 0;
+    for (let i = 0; i < 300; i++) {
+      const k = await cleDeSecours(aleatoire(32));
+      const j = Math.floor(Math.random() * k.length);
+      if (k[j] === '-') continue;
+      const faute = k.slice(0, j) + (k[j] === 'A' ? 'B' : 'A') + k.slice(j + 1);
+      const lu = await lireCleDeSecours(faute);
+      if (lu) { acceptees++; expect(lu).not.toEqual(await lireCleDeSecours(k)); }
+    }
+    expect(acceptees).toBeLessThan(45);
     expect(await lireCleDeSecours('trop-court')).toBeNull();
   });
 

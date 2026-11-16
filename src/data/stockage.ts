@@ -88,6 +88,11 @@ export class Stockage {
     };
   }
 
+  /** Oublie l'état de synchro (après avoir quitté un espace) ; les projets restent. */
+  async oublierSynchro(): Promise<void> {
+    await this.index.synchro.clear();
+  }
+
   /** Projets connus de l'espace (non supprimés). */
   idsProjets(): string[] {
     const ids: string[] = [];

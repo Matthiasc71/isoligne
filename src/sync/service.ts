@@ -10,7 +10,7 @@ import { ErreurSynchro, TransportHttp } from './transport';
 export interface ConfigSynchro { url: string; espace: string; appareil: string; jeton: string; nom: string }
 
 export type Statut = 'non-configure' | 'inactif' | 'en-cours' | 'a-jour' | 'hors-ligne' | 'erreur' | 'revoque';
-export interface EtatSynchro { statut: Statut; dernier: number | null; erreur: string | null }
+export interface EtatSynchro { statut: Statut; dernier: number | null; erreur: string | null; erreurDepuis: number | null }
 
 export interface AppareilDistant { id: string; nom: string; cree: number; vu: number; moi: boolean }
 
@@ -42,7 +42,7 @@ export interface AppairageReclame { id: string; espace: string; paire: Paire | n
  * (ouverture, retour au premier plan, retour du réseau, toutes les 30 s).
  */
 export class ServiceSynchro {
-  private etat: EtatSynchro = { statut: 'non-configure', dernier: null, erreur: null };
+  private etat: EtatSynchro = { statut: 'non-configure', dernier: null, erreur: null, erreurDepuis: null };
   private readonly abonnes = new Set<() => void>();
   private moteur: MoteurSynchro | null = null;
   private config: ConfigSynchro | null = null;
@@ -60,7 +60,11 @@ export class ServiceSynchro {
   abonner(f: () => void): () => void { this.abonnes.add(f); return () => this.abonnes.delete(f); }
 
   private poser(e: Partial<EtatSynchro>): void {
-    this.etat = { ...this.etat, ...e };
+    const suivant = { ...this.etat, ...e };
+    // Début d'une période d'erreur (témoin global au-delà de 10 min).
+    if (suivant.statut === 'erreur') suivant.erreurDepuis = this.etat.erreurDepuis ?? Date.now();
+    else if (suivant.statut === 'a-jour') suivant.erreurDepuis = null;
+    this.etat = suivant;
     for (const f of this.abonnes) f();
   }
 
@@ -148,6 +152,19 @@ export class ServiceSynchro {
   async cleDeSecours(): Promise<string | null> {
     const m = await this.maitre();
     return m ? cleDeSecours(m) : null;
+  }
+
+  /**
+   * Quitter l'espace (après une révocation) : le secret et le jeton sont effacés,
+   * les projets restent sur l'appareil, qui peut ensuite rejoindre un espace.
+   */
+  async quitter(): Promise<void> {
+    this.arreter();
+    this.config = null;
+    await this.stockage.poserReglage('synchro', null);
+    await this.stockage.poserReglage('maitre', null);
+    await this.stockage.oublierSynchro();
+    this.poser({ statut: 'non-configure', dernier: null, erreur: null, erreurDepuis: null });
   }
 
   // ───────────────────────────── Appairage : appareil existant ─────────────────────────────

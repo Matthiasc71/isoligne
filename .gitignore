@@ -1,6 +1,7 @@
 # Dépendances et builds
 node_modules/
 dist/
+dist-synchro/
 .vite/
 coverage/
 playwright-report/

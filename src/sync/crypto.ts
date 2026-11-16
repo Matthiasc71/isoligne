@@ -170,21 +170,25 @@ export function codeAppairage(): string {
 }
 
 /**
- * Clé de secours imprimable : le secret maître en base32 (52 caractères),
- * en groupes de 4, suivie de 2 caractères de contrôle contre les fautes de frappe.
+ * Clé de secours imprimable : 52 caractères base32, en 13 groupes de 4.
+ * 256 bits du secret maître + 4 bits de contrôle (SHA-256) logés dans le dernier
+ * caractère : une faute de frappe est détectée 15 fois sur 16 ; le serveur refuse
+ * de toute façon une clé qui ne correspond à aucun espace.
  */
 export async function cleDeSecours(maitre: Uint8Array): Promise<string> {
-  const corps = base32(maitre);
   const h = new Uint8Array(await crypto.subtle.digest('SHA-256', maitre as BufferSource));
-  const controle = base32(h.subarray(0, 2)).slice(0, 2);
-  return `${corps}${controle}`.match(/.{1,4}/g)!.join('-');
+  const o = new Uint8Array(33);
+  o.set(maitre);
+  o[32] = h[0]! & 0xf0;
+  return base32(o).slice(0, 52).match(/.{4}/g)!.join('-');
 }
 
 export async function lireCleDeSecours(saisie: string): Promise<Uint8Array | null> {
   const t = normaliserBase32(saisie);
-  if (!t || t.length !== 54) return null;
-  const maitre = depuisBase32(t.slice(0, 52), 32);
-  if (!maitre) return null;
+  if (!t || t.length !== 52) return null;
+  const o = depuisBase32(`${t}0`, 33);
+  if (!o) return null;
+  const maitre = o.slice(0, 32);
   const h = new Uint8Array(await crypto.subtle.digest('SHA-256', maitre as BufferSource));
-  return base32(h.subarray(0, 2)).slice(0, 2) === t.slice(52) ? maitre : null;
+  return (o[32]! & 0xf0) === (h[0]! & 0xf0) ? maitre : null;
 }

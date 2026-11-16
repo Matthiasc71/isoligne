@@ -1,6 +1,6 @@
 # Brief : synchro, appairage, clé de secours
 
-Statut : **proposé le 16.11.2026, en attente de confirmation.** Spec : §4.2 (appairage, synchro), §7.6 (Réglages), §9.
+Statut : **validé le 16.11.2026** : code seul (pas de QR), clé de secours affichée et imprimable. Spec : §4.2 (appairage, synchro), §7.6 (Réglages), §9.
 
 ## 1. Rôle
 Mode **Operate**, écran rare. On le traverse une fois pour relier l'iPhone et l'ordinateur, puis on ne le revoit presque plus. Il doit inspirer confiance (« mes données restent à moi ») sans jargon ni alarme.
@@ -53,4 +53,4 @@ Aucun indicateur de synchro sur les autres écrans quand tout va bien. Seulement
 - Textes sobres : jamais « Synchronisation réussie ! ». Les erreurs nomment la situation et la suite (« Code inconnu ou expiré. Affichez un nouveau code sur l'autre appareil. »).
 - 3 tailles de texte : display (code, empreinte), body, cote.
 - Le secret maître n'est jamais affiché, sauf sous la forme de la clé de secours, à la demande.
-- **iOS** : une app de l'écran d'accueil est isolée de Safari (WebKit). L'appairage doit donc se faire **dans l'app installée**, jamais dans Safari. Voir la question sur le QR code.
+- **iOS** : une app de l'écran d'accueil est isolée de Safari (WebKit). L'appairage se fait donc **dans l'app installée**, par le code de 8 caractères. Le QR code est abandonné.

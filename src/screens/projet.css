@@ -166,10 +166,6 @@
   padding-bottom: 12px;
   border-bottom: 1px solid var(--trait);
 }
-.lien-action {
-  min-height: var(--cible);
-  padding: 0 4px;
-}
 
 /* Barre du bas : sélecteur Page · Graphe · Frise + ajout */
 .barre-vue {
@@ -224,26 +220,6 @@
   inset: 0;
 }
 
-/* Confirmation */
-.confirmation {
-  margin-bottom: 28px;
-  max-width: 48ch;
-}
-.confirmation-actions {
-  display: flex;
-  gap: 12px;
-}
-.bouton-secondaire,
-.bouton-danger {
-  flex: 1;
-  min-height: var(--cible);
-  border: 1px solid var(--trait-2);
-}
-.bouton-danger {
-  border-color: var(--redline);
-  background: var(--redline);
-  color: var(--fond);
-}
 
 /* Ordinateur : page et graphe côte à côte */
 .projet-colonnes {

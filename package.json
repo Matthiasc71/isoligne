@@ -15,6 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test --trace off",
+    "e2e:synchro": "playwright test -c playwright.synchro.config.ts --trace off",
     "detect": "impeccable detect src/",
     "icones": "node scripts/icones.mjs"
   },
