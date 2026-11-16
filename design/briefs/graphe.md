@@ -1,6 +1,6 @@
 # Brief : Graphe et Frise
 
-Statut : **proposé le 16.11.2026, en attente de confirmation.** Référence : `design/maquettes/v2-graphe-sombre.png`. Spec : §6, §7.3, §8.4.6.
+Statut : **validé le 16.11.2026** : tâches faites estompées, 4 icônes, glisser = rattacher ou épingler. Référence : `design/maquettes/v2-graphe-sombre.png`. Spec : §6, §7.3, §8.4.6.
 
 ## 1. Rôle et contexte
 Mode **Operate**. La même arborescence que la Page, vue comme un plan : on y voit la forme du projet, on y crée des liens transversaux, on y réorganise d'un geste.
@@ -30,7 +30,7 @@ Sur les nœuds : seulement le libellé, et la date pour la seule redline.
    - une ligne grise « 2.1 · 05.12 · 0/3 » (numéro, date, sous-tâches) ;
    - bouton « › » qui ouvre le panneau complet du nœud (celui de la Page).
    - Cadre en redline seulement si le nœud porte l'échéance urgente, sinon en trait.
-5. **Barre d'outils**, icônes seules : Ajouter · Relier · Replier · Exporter (spec : 4 icônes). « Réorganiser » n'apparaît qu'en présence de nœuds déplacés à la main (voir la question 2).
+5. **Barre d'outils**, icônes seules : Ajouter · Relier · Replier · Exporter (spec : 4 icônes). « Réorganiser » n'apparaît qu'en présence de nœuds déplacés à la main.
 
 **Ordinateur** : mêmes onglets en haut de la colonne, barre d'outils en bas, **mini-carte** dans le coin, info-bulles sur les icônes.
 
@@ -58,7 +58,7 @@ Sur les nœuds : seulement le libellé, et la date pour la seule redline.
   - les nœuds sans date n'y figurent pas ; une ligne grise discrète en bas l'indique (« 12 sans date ») ;
   - aujourd'hui est marqué d'un trait rouge vertical ;
   - un couloir par branche de premier niveau, son libellé en Label à gauche.
-- **Tâches faites** : voir la question 1.
+- **Tâches faites** : **estompées** (trait cote, croix tracée), toujours visibles dans le graphe.
 
 ## 7. Contraintes et décisions à confirmer
 - 3 tailles de texte : Label (branches), body (feuilles), cote (dates, ligne grise).

@@ -24,7 +24,7 @@ for (const [format, options] of Object.entries(formats)) {
     if (format === 'iphone') await page.screenshot({ path: nom('accueil') });
     await page.getByRole('link', { name: /Marée basse/ }).first().click();
     await page.locator('.projet-titre').waitFor();
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(format === 'ordinateur' ? 1500 : 400);
     await page.screenshot({ path: nom('projet') });
     if (format === 'iphone') {
       await page.locator('.projet-titre').click();
@@ -41,6 +41,20 @@ for (const [format, options] of Object.entries(formats)) {
       await page.getByRole('dialog').getByRole('button', { name: 'Ouvrir' }).click();
       await page.waitForTimeout(300);
       await page.screenshot({ path: nom('branche') });
+      // Graphe : quatre dispositions et sélection.
+      await page.goto(`${base}#/`);
+      await page.getByRole('link', { name: /Marée basse/ }).first().click();
+      await page.getByRole('tab', { name: 'Graphe' }).click();
+      for (const d of ['Radial', 'Arbre', 'Libre', 'Frise']) {
+        await page.getByRole('tab', { name: d }).click();
+        await page.waitForTimeout(d === 'Libre' ? 1500 : 700);
+        await page.screenshot({ path: nom(`graphe-${d.toLowerCase()}`) });
+      }
+      await page.getByRole('tab', { name: 'Radial' }).click();
+      await page.waitForTimeout(700);
+      await page.locator('.react-flow__node', { hasText: /^Repérages/ }).click();
+      await page.waitForTimeout(300);
+      await page.screenshot({ path: nom('graphe-selection') });
       await page.goto(`${base}#/`);
       await page.getByRole('button', { name: 'Ajouter', exact: true }).click();
       await page.getByRole('button', { name: 'Nouveau projet' }).click();

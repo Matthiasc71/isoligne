@@ -198,3 +198,16 @@ isoligne/
   - liste virtualisée (jalon 2) ;
   - agenda, recherche et réglages complets (jalons 5 et 6) ;
   - onglets Graphe et Frise (jalon 2).
+
+### Jalon 2 : graphes (livré le 16.11.2026)
+- Fait :
+  - liens libres et positions épinglées par disposition ;
+  - radial (cercles de construction), arbre (horizontal ; vertical prévu dans le code), libre (force dirigée dans un Web Worker), frise (couloirs, aujourd'hui, glisser = nouvelle date) ;
+  - édition dans les deux sens : ajouter, renommer, rattacher par glisser, épingler, Réorganiser, relier, replier, supprimer avec Annuler ;
+  - export SVG et PNG dans le thème ;
+  - clavier ; mini-carte ; 3 colonnes redimensionnables sur ordinateur ; transitions de 300 ms.
+- Rapports : `design/rapports/jalon-2/` (critique 33/40, audit 17/20, 0 anti-pattern, 0 violation axe).
+- Reporté :
+  - gestes tactiles du graphe sur iPhone réel (jalon 7) ;
+  - raccourcis du graphe dans l'aide (jalon 6) ;
+  - option d'arbre vertical dans l'interface.

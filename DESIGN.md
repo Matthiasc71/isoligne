@@ -28,21 +28,21 @@ colors:
   calque-craie-jour: "#5A5F66"
 typography:
   display:
-    fontFamily: "Archivo, 'Arial Narrow', sans-serif"
+    fontFamily: "'Archivo Variable', 'Arial Narrow', sans-serif"
     fontSize: "44px"
     fontWeight: 800
     lineHeight: 1
     letterSpacing: "0.04em"
     fontVariation: "'wdth' 125"
   title:
-    fontFamily: "Archivo, 'Arial Narrow', sans-serif"
+    fontFamily: "'Archivo Variable', 'Arial Narrow', sans-serif"
     fontSize: "28px"
     fontWeight: 800
     lineHeight: 1.1
     letterSpacing: "0.06em"
     fontVariation: "'wdth' 125"
   label:
-    fontFamily: "Archivo, 'Arial Narrow', sans-serif"
+    fontFamily: "'Archivo Variable', 'Arial Narrow', sans-serif"
     fontSize: "12px"
     fontWeight: 700
     lineHeight: 1.2
@@ -161,7 +161,7 @@ Huit couleurs, chacune en valeur nuit et jour : orange, vert d'eau, lilas, ocre,
 
 ## Typography
 
-**Display Font:** Archivo variable, axe de largeur à 125 % (repli : Arial Narrow)
+**Display Font:** Archivo (famille « Archivo Variable » auto-hébergée), axe de largeur à 125 % (repli : Arial Narrow)
 **Body Font:** B612 (repli : system-ui)
 **Label/Mono Font:** B612 Mono (repli : ui-monospace)
 
@@ -235,6 +235,18 @@ Implémentés dans `src/design/signature.tsx` (signature), `src/ui/ui.tsx` (prim
 - **Nuage** (`Nuage`) : contour festonné calculé à la taille du texte, tracé en 250 ms.
 - **Calque** (`Calque`) : carré de 10 px + numéro en cote ; contour décalé de 2 px en mode jour.
 - **Cartouche** : grille de 6 colonnes bordée de traits pleins, étiquettes en Label cote au-dessus de chaque valeur. C'est le seul endroit où les étiquettes sont permises, parce que c'est le détail déplié.
+
+### Graphe (signature)
+- **Centre** : cercle de 56 px bordé, carré de calque de 14 px au milieu ; une branche ouverte (poupée russe) écrit son libellé en Label dessous.
+- **Branche** : rectangle bordé de 1 px, libellé en Label capitales, fond papier (il masque les arêtes qui le traversent).
+- **Feuille** : carré plein de 9 px, libellé en body vers l'extérieur du plan ; la seule redline a son carré et sa date en rouge.
+- **Tâche faite** : carré vide avec une croix, libellé en cote : estompée, jamais cachée.
+- **Arêtes** : trait de 1 px à 75 % d'opacité ; droites (radial, libre) ou à angle droit (arbre). Celles d'un nœud nouveau se tracent.
+- **Liens libres** : courbe pointillée 4/4 à la couleur du calque du projet, libellé en cote au milieu.
+- **Construction** : cercles en pointillé 2/5 (radial), axes de grille ; frise : axe du temps en trait, graduations en cote, aujourd'hui en redline, couloirs par branche.
+- **Sélection** : 4 repères d'angle rouges ; panneau de sélection bordé (rouge si c'est la redline) avec chevron « › ».
+- **Onglets de disposition** : libellés en Label, l'actif souligné de 2 px.
+- **Mini-carte** (ordinateur) : 160 × 110, points de 3 px en cote, cadre visible en trait.
 
 ## Do's and Don'ts
 
