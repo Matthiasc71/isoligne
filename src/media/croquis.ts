@@ -1,4 +1,5 @@
 import * as Y from 'yjs';
+import { useSyncExternalStore } from 'react';
 import { getStroke } from 'perfect-freehand';
 import { nouvelId } from '../data/ids';
 import { blocs, type YBloc } from '../data/schema';
@@ -133,4 +134,25 @@ export function numerosFigures(blocsTries: { id: string; type: string }[]): Map<
   let n = 0;
   for (const b of blocsTries) if (b.type === 'croquis') res.set(b.id, ++n);
   return res;
+}
+
+const VIDE: Trait[] = [];
+const instantanes = new WeakMap<Y.Array<Trait>, Trait[]>();
+
+/** Traits d'un croquis : un nouveau tableau seulement quand les traits changent (les tracés ne sont pas recalculés à chaque frappe ailleurs). */
+export function useTraits(y: Y.Array<Trait> | null): Trait[] {
+  return useSyncExternalStore(
+    (cb) => {
+      if (!y) return () => {};
+      const f = () => { instantanes.set(y, y.toArray()); cb(); };
+      y.observe(f);
+      return () => y.unobserve(f);
+    },
+    () => {
+      if (!y) return VIDE;
+      let t = instantanes.get(y);
+      if (!t) { t = y.toArray(); instantanes.set(y, t); }
+      return t;
+    },
+  );
 }

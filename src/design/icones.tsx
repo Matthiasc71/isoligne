@@ -113,3 +113,21 @@ export const IcReorganiser = (p: P) => (
 export const IcSuivant = (p: P) => (
   <Icone {...p}><path d="M9.5 6.5 15 12l-5.5 5.5" /></Icone>
 );
+export const IcCrayon = (p: P) => (
+  <Icone {...p}><path d="M5 19l1-4L16 5l3 3L9 18zM14 7l3 3" /></Icone>
+);
+export const IcGomme = (p: P) => (
+  <Icone {...p}><path d="M9 19h10M5.5 14.5l8-8 5 5-6.5 6.5H9z" /><path d="M9.5 10.5l5 5" /></Icone>
+);
+export const IcRetablir = (p: P) => (
+  <Icone {...p}><path d="M15 6.5l4 4-4 4M18.5 10.5H9a4 4 0 0 0 0 8h3" /></Icone>
+);
+export const IcCroquis = (p: P) => (
+  <Icone {...p}><path d="M4.75 7.75h14.5v9.5H4.75z" /><path d="M7 14c2-3 3.5-3 5-1s3 2 5-1" /></Icone>
+);
+export const IcLien = (p: P) => (
+  <Icone {...p}><path d="M10 14l4-4M8.5 11.5l-2 2a3 3 0 0 0 4 4l2-2M15.5 12.5l2-2a3 3 0 0 0-4-4l-2 2" /></Icone>
+);
+export const IcEpaisseur = ({ largeur, ...p }: P & { largeur: number }) => (
+  <Icone {...p}><path d="M5 12h14" strokeWidth={largeur} /></Icone>
+);

@@ -4,7 +4,8 @@ import { IcCalendrier, IcPlus, IcProjets, IcRecherche } from '../design/icones';
 import { BoutonIcone } from '../ui/ui';
 import { aller, useRoute, type Route } from './route';
 import { Accueil } from '../screens/Accueil';
-import { AjoutRapide } from '../screens/AjoutRapide';
+import { AjoutRapide, type Mode } from '../screens/AjoutRapide';
+import { normaliserUrl } from '../media/lien';
 import { Raccourcis } from './Raccourcis';
 import './app.css';
 
@@ -56,6 +57,22 @@ export function App() {
   const route = useRoute();
   const large = useLarge();
   const [ajout, setAjout] = useState(false);
+  const [demandeAjout, setDemandeAjout] = useState<{ mode: Mode; url?: string } | null>(null);
+
+  // Coller une adresse hors d'un champ (ordinateur) : propose de l'ajouter à un projet.
+  useEffect(() => {
+    const f = (e: ClipboardEvent) => {
+      const cible = e.target as HTMLElement | null;
+      if (cible?.closest('input, textarea, [contenteditable="true"]')) return;
+      const url = normaliserUrl(e.clipboardData?.getData('text/plain') ?? '');
+      if (!url) return;
+      e.preventDefault();
+      setDemandeAjout({ mode: 'lien', url });
+      setAjout(true);
+    };
+    window.addEventListener('paste', f);
+    return () => window.removeEventListener('paste', f);
+  }, []);
 
   // Raccourci global : Cmd/Ctrl+K ouvre l'ajout rapide (la palette complète arrive au jalon 6).
   useEffect(() => {
@@ -93,7 +110,7 @@ export function App() {
         <Suspense fallback={null}>{contenu}</Suspense>
       </main>
       {!large && barreVisible && <Navigation route={route} onAjouter={() => setAjout(true)} verticale={false} />}
-      <AjoutRapide ouverte={ajout} onFermer={() => setAjout(false)} />
+      <AjoutRapide ouverte={ajout} demande={demandeAjout} onFermer={() => { setAjout(false); setDemandeAjout(null); }} />
       <Raccourcis />
     </div>
   );

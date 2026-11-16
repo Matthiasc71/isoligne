@@ -4,7 +4,7 @@ import type * as Y from 'yjs';
 import { useArbre, useProjet, useStockage, useVersion } from '../app/contexte';
 import { aller, type Route, type Vue } from '../app/route';
 import { useMaintenant } from '../app/temps';
-import { IcArbre, IcEcheance, IcPlus, IcRetour, IcSeparateur, IcSuite, IcTexte } from '../design/icones';
+import { IcArbre, IcCroquis, IcEcheance, IcLien, IcPlus, IcRetour, IcSeparateur, IcSuite, IcTexte } from '../design/icones';
 import { Calque, CoteAvancement } from '../design/signature';
 import {
   COULEURS, LIBELLES_COULEUR, LIBELLES_STATUT, LIBELLES_TYPE, LIBELLES_TYPE_COURT, RACINE, formaterCalque, lireMeta,
@@ -19,6 +19,11 @@ import { PanneauNoeud } from '../outliner/PanneauNoeud';
 import { Avis, BoutonIcone, Choix, Feuille } from '../ui/ui';
 import { BlocEcheance, BlocSeparateur, BlocTexte, CommandesBloc } from './Blocs';
 import { Separateur } from '../ui/Separateur';
+import { Figure } from '../media/Figure';
+import { Planche } from '../media/Planche';
+import { BlocLien } from '../media/BlocLien';
+import { numerosFigures, traitsDe, useTraits } from '../media/croquis';
+import type { Bloc } from '../data/projet';
 import type { Disposition } from '../graph/liens';
 import './projet.css';
 
@@ -56,6 +61,7 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
   const [confirmer, setConfirmer] = useState(false);
   const [avis, setAvis] = useState<string | null>(null);
   const [nouveauBloc, setNouveauBloc] = useState<string | null>(null);
+  const [planche, setPlanche] = useState<string | null>(null);
   const [focusNoeud, setFocusNoeud] = useState<string | null>(null);
 
   // Disposition du graphe : mémorisée (iPhone : Radial, Arbre ou Libre ; la Frise a sa propre vue).
@@ -99,14 +105,18 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
     );
   }
 
-  const ajouterBloc = (type: 'branche' | 'texte' | 'echeance' | 'separateur') => {
+  const ajouterBloc = (type: 'branche' | 'texte' | 'echeance' | 'separateur' | 'croquis' | 'lien') => {
     setAjout(false);
     if (type === 'branche') {
       setFocusNoeud(creerNoeud(doc, racine));
       return;
     }
-    setNouveauBloc(creerBloc(doc, type));
+    const id = creerBloc(doc, type);
+    setNouveauBloc(id);
+    if (type === 'croquis') setPlanche(id);
   };
+  const figures = numerosFigures(blocs);
+  const couverture = blocs.find((b) => b.type === 'croquis' && b.y.get('couverture'));
 
   const nomenclature = (
     <Nomenclature
@@ -170,11 +180,14 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
         onSupprime={(t) => setAvis(`${t} supprimé`)}
       />
       {avis && <Avis texte={avis} action="Annuler" onAction={() => annuler.undo()} onFin={() => setAvis(null)} />}
+      {planche && blocs.some((b) => b.id === planche) && (
+        <Planche doc={doc} annuler={annuler} idBloc={planche} numero={figures.get(planche) ?? 1} couleur={meta.couleur} onFermer={() => setPlanche(null)} />
+      )}
     </>
   );
 
   const page = (
-    <div className={`ecran projet${large ? ' projet-large' : ''}`}>
+    <div className={`ecran projet${large ? ' projet-large' : ''}`} style={{ ['--calque-courant' as string]: `var(--calque-${meta.couleur})` }}>
       <div className="barre-haute">
         <BoutonIcone libelle={noeudRacine ? 'Remonter' : 'Retour aux projets'} sansCadre onClick={remonter}><IcRetour /></BoutonIcone>
         <BoutonIcone libelle="Options du projet" sansCadre onClick={() => setMenu(true)}><IcSuite /></BoutonIcone>
@@ -184,6 +197,12 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
         <EnTeteBranche doc={doc} meta={meta} arbre={arbre} racine={racine} allerBranche={allerBranche} />
       ) : (
         <EnTeteProjet doc={doc} meta={meta} cartouche={cartouche} basculer={() => setCartouche((c) => !c)} maintenant={maintenant} />
+      )}
+
+      {!noeudRacine && couverture && (
+        <div className="projet-section couverture">
+          <FigureBloc bloc={couverture} numero={figures.get(couverture.id) ?? 1} onOuvrir={() => setPlanche(couverture.id)} />
+        </div>
       )}
 
       {total > 0 && (
@@ -202,15 +221,17 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
       {noeudRacine ? (
         <div className="projet-section">{nomenclature}</div>
       ) : (
-        blocs.map((b, i) => (
+        blocs.filter((b) => b !== couverture || reorganiser).map((b, i, liste) => (
           <section key={b.id} className="projet-section" aria-label={b.type === 'arbre' ? 'Arborescence' : undefined}>
-            {reorganiser && <CommandesBloc doc={doc} bloc={b} premier={i === 0} dernier={i === blocs.length - 1} onSupprime={(nom) => { annuler.stopCapturing(); setAvis(`${nom} supprimé`); }} />}
+            {reorganiser && <CommandesBloc doc={doc} bloc={b} premier={i === 0} dernier={i === liste.length - 1} onSupprime={(nom) => { annuler.stopCapturing(); setAvis(`${nom} supprimé`); }} />}
             {b.type === 'arbre' && nomenclature}
             {b.type === 'texte' && <BlocTexte bloc={b} autoFocus={nouveauBloc === b.id} />}
             {b.type === 'echeance' && (
               <BlocEcheance doc={doc} bloc={b} urgente={urgente?.cible === b.id} maintenant={maintenant} autoFocus={nouveauBloc === b.id} />
             )}
             {b.type === 'separateur' && <BlocSeparateur />}
+            {b.type === 'croquis' && <FigureBloc bloc={b} numero={figures.get(b.id) ?? 1} onOuvrir={() => setPlanche(b.id)} />}
+            {b.type === 'lien' && <BlocLien doc={doc} bloc={b} autoFocus={nouveauBloc === b.id} />}
           </section>
         ))
       )}
@@ -239,6 +260,8 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
           <>
             <Choix icone={<IcTexte />} onClick={() => ajouterBloc('texte')}>Texte</Choix>
             <Choix icone={<IcEcheance />} onClick={() => ajouterBloc('echeance')}>Échéance</Choix>
+            <Choix icone={<IcCroquis />} onClick={() => ajouterBloc('croquis')}>Croquis</Choix>
+            <Choix icone={<IcLien />} onClick={() => ajouterBloc('lien')}>Lien</Choix>
             <Choix icone={<IcSeparateur />} onClick={() => ajouterBloc('separateur')}>Séparateur</Choix>
           </>
         )}
@@ -378,4 +401,11 @@ function EnTeteBranche({ doc, meta, arbre, racine, allerBranche }: {
       </div>
     </header>
   );
+}
+
+/** Bloc croquis lu dans Yjs : la figure se redessine quand ses traits changent. */
+function FigureBloc({ bloc, numero, onOuvrir }: { bloc: Bloc; numero: number; onOuvrir: () => void }) {
+  const traits = useTraits(traitsDe(bloc.y));
+  const legende = bloc.y.get('legende');
+  return <Figure traits={traits} numero={numero} legende={legende ? String(legende) : ''} onOuvrir={onOuvrir} />;
 }

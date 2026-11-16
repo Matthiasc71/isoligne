@@ -28,6 +28,16 @@ for (const mode of ['dark', 'light'] as const) {
     };
 
     await verifier('projet');
+    await page.getByRole('button', { name: 'Ajouter un bloc' }).click();
+    await page.getByRole('button', { name: 'Lien', exact: true }).click();
+    await page.getByLabel('Adresse').fill('exemple.fr');
+    await page.getByLabel('Adresse').press('Enter');
+    await page.getByRole('button', { name: 'Ajouter un bloc' }).click();
+    await page.getByRole('button', { name: 'Croquis' }).click();
+    await page.getByRole('dialog', { name: /Planche/ }).waitFor();
+    await verifier('planche');
+    await page.getByRole('button', { name: 'Terminé' }).click();
+    await verifier('médias');
     await page.locator('.projet-titre').click();
     await verifier('cartouche');
     await page.locator('.projet-titre').click();

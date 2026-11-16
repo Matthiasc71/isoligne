@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useStockage } from '../app/contexte';
 import { aller } from '../app/route';
@@ -7,14 +7,26 @@ import {
   COULEURS, LIBELLES_COULEUR, LIBELLES_TYPE_COURT, RACINE, type CleCouleur, type TypeProjet,
 } from '../data/schema';
 import { creerNoeud } from '../tree/arbre';
+import { creerBloc } from '../data/projet';
+import { poserUrl } from '../media/lien';
+import { SaisieLien } from '../media/BlocLien';
 import { Choix, Feuille, Segments } from '../ui/ui';
 import './ajout.css';
 
-type Mode = 'menu' | 'projet' | 'idee';
+export type Mode = 'menu' | 'projet' | 'idee' | 'lien';
 
-export function AjoutRapide({ ouverte, onFermer }: { ouverte: boolean; onFermer: () => void }) {
+export function AjoutRapide({ ouverte, onFermer, demande }: {
+  ouverte: boolean;
+  onFermer: () => void;
+  /** Ouverture directe (coller une adresse sur ordinateur). */
+  demande?: { mode: Mode; url?: string } | null;
+}) {
   const stockage = useStockage();
   const [mode, setMode] = useState<Mode>('menu');
+  const [urlCollee, setUrlCollee] = useState('');
+  useEffect(() => {
+    if (ouverte && demande) { setMode(demande.mode); setUrlCollee(demande.url ?? ''); }
+  }, [ouverte, demande]);
   const projets = useLiveQuery(() => stockage.index.projets.where('statut').notEqual('archive').toArray(), [stockage]);
   const fermer = () => { onFermer(); setTimeout(() => setMode('menu'), 300); };
   // Aucun projet : droit au formulaire. Rien n'est affiché tant que la liste n'est pas lue (pas de clignotement).
@@ -24,16 +36,18 @@ export function AjoutRapide({ ouverte, onFermer }: { ouverte: boolean; onFermer:
     <Feuille
       ouverte={ouverte}
       onFermer={fermer}
-      titre={effectif === 'projet' ? 'Nouveau projet' : effectif === 'idee' ? 'Idée' : 'Ajouter'}
+      titre={effectif === 'projet' ? 'Nouveau projet' : effectif === 'idee' ? 'Idée' : effectif === 'lien' ? 'Lien' : 'Ajouter'}
     >
       {effectif === 'menu' && (
         <>
           <Choix onClick={() => setMode('projet')}>Nouveau projet</Choix>
           <Choix onClick={() => setMode('idee')}>Idée dans un projet</Choix>
+          <Choix onClick={() => setMode('lien')}>Lien dans un projet</Choix>
         </>
       )}
       {effectif === 'projet' && <FormProjet couleursPrises={projets?.map((p) => p.couleur) ?? []} onFini={fermer} />}
       {effectif === 'idee' && <FormIdee onFini={fermer} />}
+      {effectif === 'lien' && <FormLien initiale={urlCollee} onFini={fermer} />}
     </Feuille>
   );
 }
@@ -128,5 +142,34 @@ function FormIdee({ onFini }: { onFini: () => void }) {
       </div>
       <button type="submit" className="bouton-principal t-label" disabled={!texte.trim() || !cible}>Ajouter</button>
     </form>
+  );
+}
+
+function FormLien({ initiale, onFini }: { initiale: string; onFini: () => void }) {
+  const stockage = useStockage();
+  const projets = useLiveQuery(() => stockage.index.projets.where('statut').notEqual('archive').sortBy('modifie'), [stockage]);
+  const [projet, setProjet] = useState<string | null>(null);
+  const liste = projets ? [...projets].reverse() : [];
+  const cible = projet ?? liste[0]?.id ?? null;
+  const ajouter = async (url: string) => {
+    if (!cible) return;
+    const o = stockage.ouvrir(cible);
+    await o.pret;
+    const id = creerBloc(o.doc, 'lien');
+    poserUrl(o.doc, id, url);
+    onFini();
+  };
+  return (
+    <div className="form-ajout">
+      <SaisieLien key={initiale} initiale={initiale} autoFocus onValider={(u) => void ajouter(u)} />
+      <div className="section-feuille" role="radiogroup" aria-label="Projet">
+        {liste.map((p) => (
+          <Choix key={p.id} role="radio" aria-checked={cible === p.id} actif={cible === p.id} onClick={() => setProjet(p.id)}
+            icone={<CarreCalque couleur={p.couleur} />}>
+            {p.titre}
+          </Choix>
+        ))}
+      </div>
+    </div>
   );
 }
