@@ -242,12 +242,13 @@ isoligne/
   - retirer les origines `localhost` de `ORIGINES` en production (jalon 7) ;
   - essai sur iPhone réel (jalon 7).
 
-### Jalon 5 : temps (livré le 16.11.2026)
+### Jalon 5 : temps (livré et déployé le 16.11.2026)
 - Fait :
   - calendrier Mois, Semaine et Agenda ; replanifier par glisser (doigt, souris) ou par « ··· », avec Annuler ; toucher ouvre le nœud ;
   - rappels J-7, J-1, jour J à 9 h, 1 h avant et personnalisé (Paris, heure d'été comprise) ; défauts réglables ; résumé quotidien ;
   - notifications Web Push chiffrées sur l'appareil, Cron toutes les 5 minutes, signature VAPID ; demande d'autorisation à la première échéance ; essai ;
   - pastille d'icône : échéances du jour et en retard.
+- Déploiement : migration `0002_push` appliquée, Cron `*/5 * * * *` actif, clé VAPID générée dans la CI (secret Cloudflare), `/push/cle` vérifié en ligne.
 - Rapport : `design/rapports/jalon-5/rapport.md` (critique 33/40, audit 18/20, 0 anti-pattern, 0 violation axe).
 - Reporté :
   - aide des gestes et raccourci du calendrier dans la palette (jalon 6) ;
