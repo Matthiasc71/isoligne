@@ -24,3 +24,10 @@ __pycache__/
 *.pyc
 
 .DS_Store
+
+# Impeccable : fichiers d'exécution
+.impeccable/live/
+.impeccable/questions/
+.impeccable/mocks/
+.impeccable/review/
+.impeccable/config.local.json
