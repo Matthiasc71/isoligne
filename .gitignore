@@ -1,0 +1,26 @@
+# Dépendances et builds
+node_modules/
+dist/
+.vite/
+coverage/
+playwright-report/
+test-results/
+
+# Secrets locaux (jamais dans le dépôt)
+.env
+.env.*
+.dev.vars
+.wrangler/
+
+# Réglages Claude Code propres à une machine
+.claude/settings.local.json
+
+# Moteur Impeccable : binaire de 26 Mo, retéléchargé et vérifié (SHA-256)
+# depuis les publications GitHub par scripts/impeccable au premier lancement
+.claude/skills/impeccable/scripts/bin/
+
+# Python
+__pycache__/
+*.pyc
+
+.DS_Store
