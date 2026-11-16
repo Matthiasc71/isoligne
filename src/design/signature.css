@@ -1,0 +1,147 @@
+.grille {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.carre-calque {
+  display: inline-block;
+  flex: none;
+  background: var(--c);
+  outline: var(--calque-contour) solid var(--c);
+  outline-offset: 2px;
+}
+
+.calque {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Ligne de cote */
+.cote-avancement {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cote-trace {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  overflow: visible;
+}
+.cote-borne,
+.cote-plein,
+.cote-pointille,
+.cote-fleche {
+  stroke: var(--trait);
+  fill: none;
+  stroke-width: 1;
+}
+.cote-borne {
+  stroke: var(--trait-2);
+}
+.cote-pointille {
+  stroke: var(--trait-2);
+  stroke-dasharray: 2 4;
+}
+.cote-plein {
+  stroke-width: 2;
+  stroke-dasharray: 1;
+  animation: trace-svg var(--duree-trait) var(--courbe) both;
+  --longueur: 1;
+}
+.cote-valeur {
+  color: var(--trait);
+  white-space: nowrap;
+}
+
+.cote-distance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cote-distance svg {
+  flex: none;
+  stroke: currentColor;
+  fill: none;
+}
+.cote-distance-trait {
+  flex: 1;
+  height: 0;
+  border-top: 1px solid currentColor;
+}
+
+/* Nuage de révision */
+.nuage {
+  position: relative;
+  display: inline-block;
+  padding: 2px 8px;
+  font-weight: 700;
+}
+.nuage-trace {
+  position: absolute;
+  left: -5px;
+  top: -5px;
+  overflow: visible;
+  pointer-events: none;
+}
+.nuage-trace path {
+  fill: none;
+  stroke: var(--redline);
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  animation: trace-svg calc(var(--duree-trait) * 1.25) var(--courbe) both;
+  --longueur: 1;
+}
+
+/* Repères d'angle */
+.reperes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  --r: var(--trait-2);
+}
+.reperes-rouges {
+  --r: var(--redline);
+}
+.reperes i {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--r);
+  border-style: solid;
+  border-width: 0;
+}
+.reperes i:nth-child(1) { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+.reperes i:nth-child(2) { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
+.reperes i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
+.reperes i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+
+/* Case à cocher */
+.case {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -14px -14px -14px -14px;
+  flex: none;
+}
+.case-cadre {
+  fill: none;
+  stroke: var(--trait);
+  stroke-width: 1;
+}
+.case-croix line {
+  stroke: var(--trait);
+  stroke-width: 1.5;
+  stroke-dasharray: 1;
+  animation: trace-svg var(--duree-trait) var(--courbe) both;
+  --longueur: 1;
+}
+.case-croix line + line {
+  animation-delay: calc(var(--duree-trait) * 0.6);
+}

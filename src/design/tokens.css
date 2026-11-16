@@ -1,0 +1,91 @@
+/* Tokens Isoligne : DESIGN.md (normatif) et design/decisions.md (contrastes). */
+
+:root {
+  /* Diazo (jour) */
+  --fond: #eef1ec;
+  --trait: #1f4e8c;
+  --trait-2: #44658c;
+  --redline: #b8321c;
+  --grille-majeure: rgb(31 78 140 / 0.07);
+  --grille-mineure: rgb(31 78 140 / 0.025);
+
+  --calque-orange: #b0601e;
+  --calque-vert-deau: #2c8572;
+  --calque-lilas: #7a5cc2;
+  --calque-ocre: #8f741c;
+  --calque-vert: #448540;
+  --calque-ciel: #2f6fb0;
+  --calque-rose: #c24d6a;
+  --calque-craie: #5a5f66;
+  /* Mode jour : contour décalé autour du carré de calque. */
+  --calque-contour: 1px;
+
+  --police-titre: 'Archivo Variable', 'Arial Narrow', sans-serif;
+  --police-corps: 'B612', system-ui, sans-serif;
+  --police-mono: 'B612 Mono', ui-monospace, monospace;
+
+  --taille-display: 44px;
+  --taille-titre: 28px;
+  --taille-corps: 16px;
+  --taille-cote: 12px;
+
+  --marge: 28px;
+  --section: 40px;
+  --ligne: 56px;
+  --cible: 48px;
+
+  --duree-trait: 200ms;
+  --duree-vue: 300ms;
+  --courbe: cubic-bezier(0.2, 0, 0, 1);
+
+  --barre-bas: calc(var(--cible) + 32px + env(safe-area-inset-bottom));
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='clair']) {
+    --fond: #0f2d52;
+    --trait: #d6e4f0;
+    --trait-2: #8fb0cf;
+    --redline: #ff8064;
+    --grille-majeure: rgb(214 228 240 / 0.08);
+    --grille-mineure: rgb(214 228 240 / 0.03);
+    --calque-orange: #ffa552;
+    --calque-vert-deau: #7fd1b9;
+    --calque-lilas: #c3a6ff;
+    --calque-ocre: #ffd166;
+    --calque-vert: #9bd38a;
+    --calque-ciel: #9ad0ff;
+    --calque-rose: #ff9fb2;
+    --calque-craie: #e6e6e6;
+    --calque-contour: 0px;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='sombre'] {
+  --fond: #0f2d52;
+  --trait: #d6e4f0;
+  --trait-2: #8fb0cf;
+  --redline: #ff8064;
+  --grille-majeure: rgb(214 228 240 / 0.08);
+  --grille-mineure: rgb(214 228 240 / 0.03);
+  --calque-orange: #ffa552;
+  --calque-vert-deau: #7fd1b9;
+  --calque-lilas: #c3a6ff;
+  --calque-ocre: #ffd166;
+  --calque-vert: #9bd38a;
+  --calque-ciel: #9ad0ff;
+  --calque-rose: #ff9fb2;
+  --calque-craie: #e6e6e6;
+  --calque-contour: 0px;
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duree-trait: 0ms;
+    --duree-vue: 0ms;
+  }
+}
