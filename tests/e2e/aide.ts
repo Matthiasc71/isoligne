@@ -4,7 +4,9 @@ import { expect, type Page } from '@playwright/test';
 export async function creerProjet(page: Page, titre: string): Promise<void> {
   await page.getByRole('button', { name: 'Ajouter', exact: true }).click();
   const champ = page.getByLabel('Titre', { exact: true });
-  if (!(await champ.isVisible())) await page.getByRole('button', { name: 'Nouveau projet' }).click();
+  const menu = page.getByRole('button', { name: 'Nouveau projet' });
+  await expect(champ.or(menu)).toBeVisible();
+  if (await menu.isVisible()) await menu.click();
   await page.getByLabel('Titre', { exact: true }).fill(titre);
   await page.getByRole('button', { name: 'Créer' }).click();
   await expect(page.getByRole('heading', { level: 1 })).toContainText(new RegExp(titre, 'i'));

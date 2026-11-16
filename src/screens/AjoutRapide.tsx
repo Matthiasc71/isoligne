@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useStockage } from '../app/contexte';
 import { aller } from '../app/route';
@@ -17,26 +17,23 @@ export function AjoutRapide({ ouverte, onFermer }: { ouverte: boolean; onFermer:
   const [mode, setMode] = useState<Mode>('menu');
   const projets = useLiveQuery(() => stockage.index.projets.where('statut').notEqual('archive').toArray(), [stockage]);
   const fermer = () => { onFermer(); setTimeout(() => setMode('menu'), 300); };
-
-  // Aucun projet : on va droit au formulaire.
-  useEffect(() => {
-    if (ouverte && projets && projets.length === 0) setMode('projet');
-  }, [ouverte, projets]);
+  // Aucun projet : droit au formulaire. Rien n'est affiché tant que la liste n'est pas lue (pas de clignotement).
+  const effectif: Mode | null = projets === undefined ? null : mode === 'menu' && projets.length === 0 ? 'projet' : mode;
 
   return (
     <Feuille
       ouverte={ouverte}
       onFermer={fermer}
-      titre={mode === 'projet' ? 'Nouveau projet' : mode === 'idee' ? 'Idée' : 'Ajouter'}
+      titre={effectif === 'projet' ? 'Nouveau projet' : effectif === 'idee' ? 'Idée' : 'Ajouter'}
     >
-      {mode === 'menu' && (
+      {effectif === 'menu' && (
         <>
           <Choix onClick={() => setMode('projet')}>Nouveau projet</Choix>
           <Choix onClick={() => setMode('idee')}>Idée dans un projet</Choix>
         </>
       )}
-      {mode === 'projet' && <FormProjet couleursPrises={projets?.map((p) => p.couleur) ?? []} onFini={fermer} />}
-      {mode === 'idee' && <FormIdee onFini={fermer} />}
+      {effectif === 'projet' && <FormProjet couleursPrises={projets?.map((p) => p.couleur) ?? []} onFini={fermer} />}
+      {effectif === 'idee' && <FormIdee onFini={fermer} />}
     </Feuille>
   );
 }
