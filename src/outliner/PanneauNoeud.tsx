@@ -6,9 +6,10 @@ import {
   IcBas, IcDesindenter, IcHaut, IcIndenter, IcOuvrir, IcRattacher, IcSupprimer,
 } from '../design/icones';
 import { rappelsEffectifs } from '../time/rappels';
-import { COULEURS, LIBELLES_COULEUR, RACINE, type CleCouleur, type Rappel } from '../data/schema';
+import { ChoixRappels } from '../notif/ChoixRappels';
+import { COULEURS, LIBELLES_COULEUR, RACINE, type CleCouleur } from '../data/schema';
 import {
-  basculerFait, basculerTache, decaler, definirCouleur, definirEcheance, definirRappels, deplacer, desindenter,
+  basculerFait, basculerTache, decaler, definirCouleur, definirEcheance, definirRappelPerso, definirRappels, deplacer, desindenter,
   estDansSousArbre, indenter, noteDe, numero, supprimer,
 } from '../tree/arbre';
 import { Choix, Feuille } from '../ui/ui';
@@ -16,12 +17,6 @@ import './panneau.css';
 
 const EditeurRiche = lazy(() => import('../editor/EditeurRiche'));
 
-const RAPPELS: { valeur: Rappel; libelle: string }[] = [
-  { valeur: 'J-7', libelle: 'J-7' },
-  { valeur: 'J-1', libelle: 'J-1' },
-  { valeur: 'J9h', libelle: 'Jour J, 9 h' },
-  { valeur: 'H-1', libelle: '1 h avant' },
-];
 
 export function PanneauNoeud({
   doc, annuler, id, champ, racine, onFermer, onOuvrirBranche, onSupprime,
@@ -96,19 +91,8 @@ export function PanneauNoeud({
                 onChange={(e) => poserDate(date, e.target.value)} />
             </div>
             {date && (
-              <div className="rappels" role="group" aria-label="Rappels">
-                {RAPPELS.filter((r) => r.valeur !== 'H-1' || heure).map((r) => {
-                  const actifs = rappelsEffectifs(n.rappels);
-                  const actif = actifs.includes(r.valeur);
-                  return (
-                    <button key={r.valeur} type="button" role="checkbox" aria-checked={actif}
-                      className={`rappel t-cote${actif ? ' actif' : ''}`}
-                      onClick={() => definirRappels(doc, id, actif ? actifs.filter((x) => x !== r.valeur) : [...actifs, r.valeur])}>
-                      {r.libelle}
-                    </button>
-                  );
-                })}
-              </div>
+              <ChoixRappels valeurs={rappelsEffectifs(n.rappels)} onChange={(r) => definirRappels(doc, id, r)} avecHeure={Boolean(heure)}
+                perso={n.rappelPerso} onPerso={(d) => definirRappelPerso(doc, id, d)} idPerso="rappel-perso-noeud" />
             )}
           </div>
 

@@ -232,6 +232,17 @@ export class ServiceSynchro {
     await api(this.config.url, `/appareils/${id}`, { jeton: this.config.jeton, methode: 'DELETE' });
   }
 
+  /** Appel authentifié au Worker (notifications…). */
+  async requete<T>(chemin: string, options: { corps?: unknown; methode?: string } = {}): Promise<T> {
+    if (!this.config) throw new Error('Synchro non configurée');
+    return api<T>(this.config.url, chemin, { jeton: this.config.jeton, ...options });
+  }
+
+  /** Appel public au Worker (clé VAPID). */
+  async requetePublique<T>(chemin: string): Promise<T> {
+    return api<T>(this.url, chemin);
+  }
+
   async usage(): Promise<{ octets: number; limite: number } | null> {
     if (!this.config) return null;
     return api(this.config.url, '/usage', { jeton: this.config.jeton });

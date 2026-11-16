@@ -6,6 +6,7 @@ import { appliquerTheme, type Theme } from '../app/theme';
 import { IcRetour } from '../design/icones';
 import { BoutonIcone, Segments } from '../ui/ui';
 import { SectionSynchro } from './Synchro';
+import { SectionNotifications } from './Notifications';
 import './secondaires.css';
 
 const LICENCES = [
@@ -47,6 +48,11 @@ export default function Reglages() {
       <section className="reglage" aria-labelledby="r-synchro">
         <h2 id="r-synchro" className="t-label">Synchro</h2>
         <SectionSynchro />
+      </section>
+
+      <section className="reglage" aria-labelledby="r-notifications">
+        <h2 id="r-notifications" className="t-label">Notifications</h2>
+        <SectionNotifications />
       </section>
 
       <section className="reglage" aria-labelledby="r-donnees">

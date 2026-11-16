@@ -1,0 +1,33 @@
+.rappels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.rappel {
+  min-height: var(--cible);
+  padding: 0 14px;
+  border: 1px solid var(--trait-2);
+  color: var(--trait);
+}
+.rappel.actif {
+  background: var(--trait);
+  border-color: var(--trait);
+  color: var(--fond);
+}
+.rappel-perso {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 16px;
+}
+.notif-ligne {
+  margin: 4px 0 12px;
+}
+.sous-reglage {
+  margin-top: 28px;
+}
+h3.sous-reglage {
+  margin-bottom: 0;
+  font-weight: 400;
+}

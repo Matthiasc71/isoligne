@@ -5,6 +5,7 @@ import { BoutonIcone } from '../ui/ui';
 import { aller, useRoute, type Route } from './route';
 import { Accueil } from '../screens/Accueil';
 import { AjoutRapide, type Mode } from '../screens/AjoutRapide';
+import { DemandeNotifications } from '../screens/Notifications';
 import { normaliserUrl } from '../media/lien';
 import { Raccourcis } from './Raccourcis';
 import './app.css';
@@ -112,6 +113,7 @@ export function App() {
       {!large && barreVisible && <Navigation route={route} onAjouter={() => setAjout(true)} verticale={false} />}
       <AjoutRapide ouverte={ajout} demande={demandeAjout} onFermer={() => { setAjout(false); setDemandeAjout(null); }} />
       <Raccourcis />
+      <DemandeNotifications />
     </div>
   );
 }

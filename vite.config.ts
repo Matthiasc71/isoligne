@@ -65,6 +65,8 @@ export default defineConfig({
         // Polices : seuls les jeux latin et latin étendu servent au français.
         globIgnores: ['**/*-{cyrillic,cyrillic-ext,greek,greek-ext,vietnamese}-*.woff2'],
         navigateFallback: 'index.html',
+        // Notifications (push, toucher, pastille) : script autonome dans public/.
+        importScripts: ['sw-push.js'],
         cleanupOutdatedCaches: true,
       },
     }),

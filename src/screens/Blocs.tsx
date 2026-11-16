@@ -1,10 +1,13 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import * as Y from 'yjs';
 import { CaseACocher, Nuage } from '../design/signature';
 import { IcBas, IcHaut, IcSupprimer } from '../design/icones';
 import { dateBloc, deplacerBloc, poserBloc, supprimerBloc, texteBloc, type Bloc } from '../data/projet';
 import { compteARebours, dateCourte, dateParlee, enRetard } from '../time/dates';
-import { BoutonIcone } from '../ui/ui';
+import { BoutonIcone, Feuille } from '../ui/ui';
+import { ChoixRappels, resumeRappels } from '../notif/ChoixRappels';
+import { rappelsEffectifs } from '../time/rappels';
+import type { Rappel } from '../data/schema';
 
 const EditeurRiche = lazy(() => import('../editor/EditeurRiche'));
 
@@ -30,7 +33,11 @@ export function BlocEcheance({ doc, bloc, urgente, maintenant, autoFocus }: {
   const retard = date !== null && !fait && enRetard(date, maintenant);
   const affichee = date ? (retard ? compteARebours(date, maintenant) : dateCourte(date, maintenant)) : null;
   const idDate = `date-${bloc.id}`;
+  const [rappelsOuverts, setRappelsOuverts] = useState(false);
+  const rappels = rappelsEffectifs(bloc.y.get('rappels') as Rappel[] | undefined);
+  const perso = (bloc.y.get('rappelPerso') as string | null | undefined) ?? null;
   return (
+    <div className={`bloc-echeance-groupe${fait ? ' faite' : ''}`}>
     <div className={`bloc bloc-echeance${fait ? ' faite' : ''}`}>
       <CaseACocher coche={fait} onChange={() => poserBloc(doc, bloc.id, 'fait', !fait)} libelle={`Échéance ${titre || 'sans titre'} faite`} />
       <input
@@ -55,6 +62,16 @@ export function BlocEcheance({ doc, bloc, urgente, maintenant, autoFocus }: {
           onChange={(e) => dateBloc(doc, bloc.id, e.target.value || null)}
         />
       </label>
+    </div>
+    {date && !fait && (
+      <button type="button" className="bloc-echeance-rappels t-cote" onClick={() => setRappelsOuverts(true)}>
+        Rappels · {resumeRappels(rappels, perso, false)}
+      </button>
+    )}
+    <Feuille ouverte={rappelsOuverts} onFermer={() => setRappelsOuverts(false)} titre="Rappels">
+      <ChoixRappels valeurs={rappels} onChange={(r) => poserBloc(doc, bloc.id, 'rappels', r)} avecHeure={false}
+        perso={perso} onPerso={(d) => poserBloc(doc, bloc.id, 'rappelPerso', d)} idPerso={`rappel-perso-${bloc.id}`} />
+    </Feuille>
     </div>
   );
 }

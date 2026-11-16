@@ -111,6 +111,13 @@
   /* Case alignée sur celles de l'arborescence (colonne des numéros de 44 px + 12 px). */
   padding-left: 56px;
 }
+.bloc-echeance-rappels {
+  display: block;
+  min-height: var(--cible);
+  padding-left: 56px;
+  color: var(--trait-2);
+  text-align: left;
+}
 .bloc-echeance-titre {
   flex: 1 1 0;
   width: 0;

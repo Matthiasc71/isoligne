@@ -11,10 +11,13 @@ import { appliquerTheme, type Theme } from './app/theme';
 import { App } from './app/App';
 import { ServiceSynchro } from './sync/service';
 import { FournisseurSynchro } from './sync/contexte';
+import { ServiceNotifs } from './notif/service';
+import { FournisseurNotifs } from './notif/contexte';
 
 const stockage = new Stockage();
 const synchro = new ServiceSynchro(stockage);
-void stockage.espacePret.then(() => synchro.charger());
+const notifs = new ServiceNotifs(stockage, synchro);
+void stockage.espacePret.then(() => synchro.charger()).then(() => notifs.charger());
 
 // Protège les données locales de l'éviction automatique du navigateur.
 void navigator.storage?.persist?.();
@@ -47,7 +50,9 @@ createRoot(document.getElementById('app')!).render(
   <StrictMode>
     <FournisseurStockage value={stockage}>
       <FournisseurSynchro value={synchro}>
-        <App />
+        <FournisseurNotifs value={notifs}>
+          <App />
+        </FournisseurNotifs>
       </FournisseurSynchro>
     </FournisseurStockage>
   </StrictMode>,
