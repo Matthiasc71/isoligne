@@ -81,10 +81,11 @@ jobs:
 
       - name: Vérification en ligne
         run: |
-          for i in 1 2 3 4 5 6; do
-            R=$(curl -sS "$URL/" || true)
-            echo "$R" | jq -e '.service == "isoligne"' > /dev/null && break
-            sleep 5
+          # Un sous-domaine workers.dev neuf attend son certificat quelques minutes : jusqu'à 5 min.
+          for i in $(seq 1 30); do
+            R=$(curl -sS "$URL/" 2>/dev/null || true)
+            echo "$R" | jq -e '.service == "isoligne"' > /dev/null 2>&1 && break
+            sleep 10
           done
           echo "$R" | jq -e '.service == "isoligne"' > /dev/null || { echo "::error::Le Worker ne répond pas"; exit 1; }
           # Un appel authentifié doit être refusé proprement (401), preuve que D1 et SEL répondent.
