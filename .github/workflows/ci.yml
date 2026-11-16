@@ -23,11 +23,17 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            worker/package-lock.json
       - run: npm ci
       - name: Typage
         run: npm run typecheck
       - name: Tests unitaires (arbre, convergence hors ligne, dates, stockage)
         run: npm test
+      - name: Worker (dépendances, typage, tests de sécurité)
+        working-directory: worker
+        run: npm ci && npm run typecheck && npm test
       - name: Détecteur d'anti-patterns (doit renvoyer zéro)
         run: npx impeccable detect --github src/
       - name: Navigateurs Playwright (Chromium + WebKit)

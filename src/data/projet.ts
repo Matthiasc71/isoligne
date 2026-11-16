@@ -4,6 +4,7 @@ import { LOCAL, lireArbre, appliquerDiff, type Arbre } from '../tree/arbre';
 import { avancement } from '../tree/lignes';
 import { comparerDates } from '../time/dates';
 import { nouvelId } from './ids';
+import { initialiserCroquis } from '../media/croquis';
 import {
   BLOC_ARBRE, blocs, lireMeta, meta, RACINE,
   type CleCouleur, type DateLocale, type Meta, type StatutProjet, type TypeBloc, type TypeProjet, type YBloc,
@@ -78,6 +79,11 @@ export function creerBloc(doc: Y.Doc, type: Exclude<TypeBloc, 'arbre'>, index?: 
       y.set('titre', new Y.Text());
       y.set('date', null);
       y.set('fait', false);
+    }
+    if (type === 'croquis') initialiserCroquis(y);
+    if (type === 'lien') {
+      y.set('url', '');
+      y.set('etat', 'vide');
     }
     blocs(doc).set(id, y);
   }, LOCAL);

@@ -1,0 +1,12 @@
+{
+  // Worker Isoligne : aperçus de liens (jalon 3), puis synchro, push et partage.
+  // L'identifiant de compte vient de CLOUDFLARE_ACCOUNT_ID (CI), jamais du dépôt.
+  "name": "isoligne-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "vars": {
+    "ORIGINES": "https://matthiasc71.github.io,http://localhost:5173,http://localhost:4173"
+  },
+  "observability": { "enabled": false }
+}
