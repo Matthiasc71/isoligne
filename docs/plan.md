@@ -1,6 +1,6 @@
 # Isoligne : plan de construction (jalon 0)
 
-Statut : **validé le 16.11.2026** (réponses en section 7). Jalon 1 en cours.
+Statut : **validé le 16.11.2026** (réponses en section 7). Jalon 1 livré le 16.11.2026 (voir section 9).
 
 ---
 
@@ -187,3 +187,14 @@ isoligne/
 - **Liens partagés** : `/s/<jeton>#<clé>`. Le Worker sert une page de lecture statique qui déchiffre l'instantané dans le navigateur ; le serveur ne peut pas le lire.
 - **Aperçus de liens** : seule exception. Le Worker voit l'URL demandée, sans la stocker.
 - **Clé de secours** : 24 mots ou un QR imprimable, proposés dès la création de l'espace et dans les Réglages. Sans elle, si tous les appareils sont perdus et qu'il n'y a pas de sauvegarde zip, les données ne sont plus récupérables. L'app le dit clairement, une fois.
+
+## 9. Suivi des jalons
+
+### Jalon 1 : socle local (livré le 16.11.2026)
+- Fait : `PRODUCT.md`, `DESIGN.md`, palette vérifiée, modèle Yjs + index Dexie, arbre réparé et testé (convergence hors ligne), accueil, page projet (cartouche, cote, nomenclature, blocs texte, échéance et séparateur), poupée russe, panneau du nœud, gestes iPhone et barre du clavier, hors ligne (service worker), aide `?`, CI.
+- Rapports : `design/rapports/jalon-1/` (critique 30/40, audit 17/20, 0 anti-pattern, 0 violation axe).
+- Reporté :
+  - test VoiceOver et tactile sur iPhone réel (jalon 7) ;
+  - liste virtualisée (jalon 2) ;
+  - agenda, recherche et réglages complets (jalons 5 et 6) ;
+  - onglets Graphe et Frise (jalon 2).
