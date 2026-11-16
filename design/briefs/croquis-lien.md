@@ -1,6 +1,6 @@
 # Brief : blocs Croquis et Lien
 
-Statut : **proposé le 16.11.2026, en attente de confirmation.** Spec : §4.1 (croquis, liens), §8.4.5 (figures). Référence : la « FIG. 1 » de `design/maquettes/v2-projet-sombre.png`.
+Statut : **validé le 16.11.2026** : planche plein écran, format fixe 2,5:1, SVG seul (pas de miniature PNG). Spec : §4.1 (croquis, liens), §8.4.5 (figures). Référence : la « FIG. 1 » de `design/maquettes/v2-projet-sombre.png`.
 
 ## 1. Rôle
 Mode **Operate**. Deux blocs de la page projet :
@@ -18,7 +18,7 @@ Les deux restent sobres dans la page ; leur édition s'ouvre au toucher.
 - Un croquis vide affiche les repères et « FIG. 1 » ; le toucher ouvre la planche.
 - **Couverture** : un croquis marqué « en couverture » s'affiche aussi sous l'en-tête du projet, à la place de la figure de la maquette.
 
-### Planche (édition, voir la question 1)
+### Planche (édition, plein écran)
 - Le dessin occupe toute la largeur, sur la grille.
 - Barre d'outils en bas, icônes seules :
   - crayon fin, moyen, épais ;

@@ -54,3 +54,9 @@ Requête : « outil de projets personnel, style blueprint/cyanotype, très épur
 ## 16.11.2026 : graphes (jalon 2)
 - **React Flow épinglé en 12.12.1** (sortie le 02.11.2026). La 13.0.0 est sortie le jour même : trop récente pour la stabilité visée. La montée de version se fera plus tard, en connaissant ses changements.
 - **Disposition libre dans un Web Worker** : 460 ms de calcul pour 500 nœuds sur cette machine, donc davantage sur un iPhone. Le graphe affiche d'abord le radial, puis s'anime vers le résultat.
+
+## 16.11.2026 : médias (jalon 3)
+- **Pas de miniature PNG des croquis** (validé par le propriétaire) : le SVG vectoriel sert partout, plus léger et net à toute taille. Un PNG n'est produit qu'à l'export (jalon 6). Écart assumé avec la spec §4.1.
+- **Croquis au format fixe 2,5:1**, dessinés sur une planche en plein écran.
+- **Aperçus de liens en texte seul** : titre et site dans la page ; la description n'apparaît que dans le détail (une seule ligne grise par élément).
+- **Worker : wrangler 4.156.2 et workers-types du 02.11.2026** (au moins deux semaines). Journaux Cloudflare désactivés (`observability.enabled: false`) : aucune adresse consultée n'est conservée.

@@ -248,6 +248,14 @@ Implémentés dans `src/design/signature.tsx` (signature), `src/ui/ui.tsx` (prim
 - **Onglets de disposition** : libellés en Label, l'actif souligné de 2 px.
 - **Mini-carte** (ordinateur) : 160 × 110, points de 3 px en cote, cadre visible en trait.
 
+### Croquis
+- **Figure** : dessin au format 2,5:1, sans cadre, **4 repères d'angle** en cote décalés de 8 px ; sous elle, en cote, « FIG. n — légende ».
+- **Encres** : trait, cote, redline, calque du projet. Uniquement des tokens, donc un croquis suit le thème.
+- **Planche** : plein écran sur la grille. En haut, « FIG. n », « ··· » et « Terminé » (bouton principal). En bas, la rangée épaisseurs + encres (boutons de 44 px, séparateur) et la barre crayon, gomme, annuler, rétablir. Légende soulignée sous le dessin.
+
+### Lien
+- Une ligne en body soulignée d'un trait de cote (le titre, ou l'adresse), une ligne grise en cote (le site). « ··· » ouvre le détail (adresse, description, copier, modifier, supprimer). Aucune image.
+
 ## Do's and Don'ts
 
 ### Do:

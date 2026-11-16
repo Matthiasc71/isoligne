@@ -211,3 +211,14 @@ isoligne/
   - gestes tactiles du graphe sur iPhone réel (jalon 7) ;
   - raccourcis du graphe dans l'aide (jalon 6) ;
   - option d'arbre vertical dans l'interface.
+
+### Jalon 3 : médias (livré le 16.11.2026)
+- Fait :
+  - croquis : planche plein écran, perfect-freehand, pression du stylet, 3 épaisseurs, 4 encres du thème, gomme, annuler, rétablir, légende, FIG. n, couverture ;
+  - liens : saisie (Coller, adresse complétée), aperçu en texte seul, relance au retour du réseau, détail ;
+  - ajout rapide « Lien dans un projet », et coller une adresse sur ordinateur ;
+  - Worker `/unfurl` (SSRF, DoH, redirections, limites, HTMLRewriter, CORS, cache), testé et essayé en local.
+- Rapport : `design/rapports/jalon-3/rapport.md` (critique 32/40, audit 17/20, 0 anti-pattern, 0 violation axe).
+- Reporté :
+  - déploiement du Worker et jeton d'appareil sur `/unfurl` (jalon 4) ;
+  - stylet et pression sur appareil réel (jalon 7).
