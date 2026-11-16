@@ -5,7 +5,7 @@ name: Déployer le Worker
 #   CLOUDFLARE_API_TOKEN  : jeton « Edit Cloudflare Workers » + D1 Edit
 #   CLOUDFLARE_ACCOUNT_ID : identifiant du compte Cloudflare
 # Prérequis : un sous-domaine workers.dev choisi une fois dans le tableau de bord Cloudflare.
-# Le sel des jetons (SEL) est généré ici au premier déploiement, jamais affiché ni versionné.
+# Le sel des jetons (SEL) et la clé VAPID sont générés ici au premier déploiement, jamais affichés ni versionnés.
 on:
   workflow_dispatch:
 
@@ -79,6 +79,16 @@ jobs:
             echo "SEL généré."
           fi
 
+      - name: Clé VAPID des notifications (une seule fois, jamais affichée)
+        run: |
+          if npx wrangler secret list --format json | jq -e '.[] | select(.name == "VAPID_JWK")' > /dev/null; then
+            echo "VAPID_JWK déjà définie : inchangée (la changer couperait les abonnements existants)."
+          else
+            node -e "crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign']).then(p=>crypto.subtle.exportKey('jwk',p.privateKey)).then(j=>process.stdout.write(JSON.stringify(j)))" \
+              | npx wrangler secret put VAPID_JWK > /dev/null
+            echo "VAPID_JWK générée."
+          fi
+
       - name: Vérification en ligne
         run: |
           # Un sous-domaine workers.dev neuf attend son certificat quelques minutes : jusqu'à 5 min.
@@ -96,6 +106,12 @@ jobs:
             sleep 5
           done
           [ "$CODE" = "401" ] || { echo "::error::/usage renvoie $CODE au lieu de 401"; exit 1; }
+          # Notifications : la clé publique VAPID est servie (la clé privée reste un secret).
+          for i in 1 2 3 4 5 6; do
+            curl -sS "$URL/push/cle" | jq -e '.cle | length == 87' > /dev/null && break
+            sleep 5
+          done
+          curl -sS "$URL/push/cle" | jq -e '.cle | length == 87' > /dev/null || { echo "::error::/push/cle ne répond pas"; exit 1; }
           {
             echo "### Worker en ligne"
             echo ""

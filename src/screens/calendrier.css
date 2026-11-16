@@ -172,7 +172,30 @@
   .cal-semaine-jour:first-child {
     border-left: 0;
   }
+  /* Colonne étroite : carré, titre (sur deux lignes au besoin), projet, compte à rebours, empilés. */
+  .cal-semaine-jour .cal-ligne {
+    position: relative;
+    display: block;
+  }
   .cal-semaine-jour .ligne-agenda {
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    min-height: 0;
+    padding: 10px 0;
+  }
+  .cal-semaine-jour .ligne-agenda-titre {
+    width: 100%;
+  }
+  .cal-semaine-jour .cal-titre {
+    white-space: normal;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+  /* « ··· » sur la ligne du carré, à droite. */
+  .cal-semaine-jour .cal-ligne .bouton-icone {
+    position: absolute;
+    top: 0;
+    right: -8px;
   }
 }

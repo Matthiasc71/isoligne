@@ -257,6 +257,17 @@ Implémentés dans `src/design/signature.tsx` (signature), `src/ui/ui.tsx` (prim
 ### Lien
 - Une ligne en body soulignée d'un trait de cote (le titre, ou l'adresse), une ligne grise en cote (le site). « ··· » ouvre le détail (adresse, description, copier, modifier, supprimer). Aucune image.
 
+### Calendrier
+- En-tête : année en cote, mois en titre, chevrons. Onglets soulignés **Mois · Semaine · Agenda** (comme le graphe).
+- Mois : initiales L à D sur un trait plein. Aujourd'hui est un carré tracé, le jour choisi un carré plein. Sous le chiffre, un petit carré par échéance (couleur du calque, redline si en retard), au plus 3, puis « +n ». Sous la grille, la liste du jour.
+- Ligne d'échéance : carré calque, titre en body, projet en cote, compte à rebours à droite (redline si c'est la plus proche ou si elle est en retard), « ··· » (ouvrir, replanifier).
+- Glisser : jour survolé encadré en tirets, fantôme d'une ligne de cote qui suit le doigt. « Déplacée au … · Annuler ».
+- Ordinateur : la semaine sur 7 colonnes égales, lignes empilées.
+
+### Rappels et notifications
+- Cases de rappel (44 px, cochées pleines) : J-7, J-1, Jour J 9 h, 1 h avant (avec une heure), puis un champ « Rappel personnalisé ».
+- Réglages, section Notifications : état en une ligne de cote, action principale en choix (« Activer les notifications », « Envoyer un essai »), rappels par défaut, résumé quotidien.
+
 ### Synchro (Réglages)
 - **État** : une ligne en cote (« À jour · il y a 2 min ») ; redline seulement si révoqué ou en erreur.
 - **Appareils** : lignes body + cote (« cet appareil », « vu le… »), « Révoquer » en label redline, confirmé dans une feuille.

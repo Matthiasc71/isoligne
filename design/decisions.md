@@ -82,3 +82,17 @@ Requête : « outil de projets personnel, style blueprint/cyanotype, très épur
 - L'adresse du Worker est publique (dépôt public, et une page Pages privée exige GitHub Enterprise Cloud, payant). N'importe qui pouvait donc ouvrir son propre espace et consommer le quota gratuit.
 - `ESPACES_MAX = "1"` en production : la création d'un espace est refusée (403) dès qu'un espace existe. La restauration et l'appairage vers cet espace restent possibles. Les tests locaux relèvent le plafond (`--var ESPACES_MAX:1000`).
 - Si un inconnu créait le premier espace avant vous, il suffirait de vider la table `espaces` en tant qu'administrateur (`wrangler d1 execute`). On ne perd rien : vos données ne sont pas encore sur le serveur.
+
+## Notifications chiffrées sur l'appareil (16.11.2026)
+- Le serveur ne doit rien lire. Chaque appareil calcule donc les rappels des 14 prochains jours, puis chiffre le texte de chacun pour chaque abonnement (RFC 8291, aes128gcm). Le Worker ne garde que l'heure et un bloc illisible ; il signe (VAPID, RFC 8292) et envoie.
+- Les abonnements (adresse, clés publiques) sont dans l'espace chiffré. Ainsi, l'iPhone peut programmer un rappel qui sonnera aussi sur l'ordinateur.
+- Le planning d'un espace tient en **une ligne D1** (liste JSON) : une écriture par mise à jour, une lecture par passage du Cron. On reste loin des 50 requêtes par invocation de l'offre gratuite.
+- Cron toutes les 5 minutes (1 des 5 Cron Triggers gratuits), au plus 40 envois par passage (limite de 50 sous-requêtes). Au-delà d'une heure de retard, un rappel est abandonné.
+- Adresses de push acceptées : `web.push.apple.com`, `fcm.googleapis.com`, `updates.push.services.mozilla.com`, `*.notify.windows.com`. Ce sont les seuls hôtes que le Worker contacte. En test, un faux service local est autorisé par `PUSH_TEST`, une variable absente en production.
+- Le « sub » des jetons VAPID est l'adresse du dépôt, jamais une adresse e-mail.
+- Le service worker est généré par Workbox ; les notifications y sont ajoutées par `importScripts('sw-push.js')`. Ce script affiche chaque push (exigence de Safari), ouvre le nœud au toucher et recalcule la pastille depuis l'index local, sans jamais créer la base.
+- Tests : la permission et l'abonnement du navigateur sont simulés, car Chromium sans interface refuse les notifications. Tout le reste est réel.
+
+## Rappels : défauts et horaires (16.11.2026)
+- J-7 et J-1 à 9 h, jour J à 9 h, sauté si l'échéance est plus tôt ce jour-là. « 1 h avant » seulement avec une heure.
+- Les défauts sont écrits sur l'échéance à sa première date. Les changer dans les Réglages ne touche pas les échéances existantes.
