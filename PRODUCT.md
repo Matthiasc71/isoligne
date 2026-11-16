@@ -14,7 +14,7 @@ Imposée par la spec (`docs/spec.md` §4) : Vite + React + TypeScript strict, vi
 
 ## Users
 
-Une seule personne : le propriétaire, pour lui seul. Il range tous ses projets : créatifs (court-métrage…), pro / clients / études (mémoire), vie perso (déménagement, événement), idées et réflexion. **Il l'utilise surtout sur iPhone**, en mobilité : capturer une idée, cocher une tâche, voir la prochaine échéance. L'ordinateur sert à structurer en profondeur (3 colonnes, clavier).
+Une seule personne, propriétaire de l'app et seule utilisatrice. Elle y range tous ses projets : créatifs (court-métrage…), pro / clients / études (mémoire), vie perso (déménagement, événement), idées et réflexion. **Usage surtout sur iPhone**, en mobilité : capturer une idée, cocher une tâche, voir la prochaine échéance. L'ordinateur sert à structurer en profondeur (3 colonnes, clavier).
 
 ## Product Purpose
 
