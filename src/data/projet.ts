@@ -3,11 +3,12 @@ import { comparerOrdre, cleInsertion } from '../tree/ordre';
 import { LOCAL, lireArbre, appliquerDiff, type Arbre } from '../tree/arbre';
 import { avancement } from '../tree/lignes';
 import { comparerDates } from '../time/dates';
+import { rappelsParDefaut } from '../time/rappels';
 import { nouvelId } from './ids';
 import { initialiserCroquis } from '../media/croquis';
 import {
   BLOC_ARBRE, blocs, lireMeta, meta, RACINE,
-  type CleCouleur, type DateLocale, type Meta, type StatutProjet, type TypeBloc, type TypeProjet, type YBloc,
+  type CleCouleur, type DateLocale, type Meta, type Rappel, type StatutProjet, type TypeBloc, type TypeProjet, type YBloc,
 } from './schema';
 
 export interface InitProjet {
@@ -112,6 +113,16 @@ export function poserBloc(doc: Y.Doc, id: string, cle: string, valeur: unknown):
   doc.transact(() => blocs(doc).get(id)?.set(cle, valeur), LOCAL);
 }
 
+/** Date d'un bloc Échéance ; la première reçoit les rappels par défaut. */
+export function dateBloc(doc: Y.Doc, id: string, date: DateLocale | null): void {
+  doc.transact(() => {
+    const y = blocs(doc).get(id);
+    if (!y) return;
+    y.set('date', date);
+    if (date && y.get('rappels') === undefined) y.set('rappels', rappelsParDefaut());
+  }, LOCAL);
+}
+
 export function texteBloc(doc: Y.Doc, id: string, valeur: string): void {
   const t = blocs(doc).get(id)?.get('titre');
   if (t instanceof Y.Text) appliquerDiff(doc, t, valeur);
@@ -125,6 +136,9 @@ export interface Echeance {
   genre: 'noeud' | 'bloc';
   titre: string;
   date: DateLocale;
+  /** null : rappels par défaut. */
+  rappels: Rappel[] | null;
+  rappelPerso: DateLocale | null;
 }
 
 /** Échéances ouvertes (non faites) d'un projet, de la plus urgente à la plus lointaine. */
@@ -141,7 +155,7 @@ export function echeancesOuvertes(doc: Y.Doc, arbre: Arbre = lireArbre(doc), rac
   };
   for (const n of arbre.parId.values()) {
     if (n.echeance && !(n.tache && n.fait) && dansRacine(n.id)) {
-      res.push({ cible: n.id, genre: 'noeud', titre: n.texte, date: n.echeance });
+      res.push({ cible: n.id, genre: 'noeud', titre: n.texte, date: n.echeance, rappels: n.rappels, rappelPerso: n.rappelPerso });
     }
   }
   if (racine === RACINE) {
@@ -150,7 +164,11 @@ export function echeancesOuvertes(doc: Y.Doc, arbre: Arbre = lireArbre(doc), rac
       const date = b.y.get('date') as DateLocale | null;
       if (!date || b.y.get('fait')) continue;
       const t = b.y.get('titre');
-      res.push({ cible: b.id, genre: 'bloc', titre: t instanceof Y.Text ? t.toString() : '', date });
+      res.push({
+        cible: b.id, genre: 'bloc', titre: t instanceof Y.Text ? t.toString() : '', date,
+        rappels: (b.y.get('rappels') as Rappel[] | undefined) ?? null,
+        rappelPerso: (b.y.get('rappelPerso') as string | null | undefined) ?? null,
+      });
     }
   }
   return res.sort((a, b) => comparerDates(a.date, b.date) || (a.cible < b.cible ? -1 : 1));

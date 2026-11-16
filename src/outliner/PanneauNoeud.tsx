@@ -5,6 +5,7 @@ import { CarreCalque } from '../design/signature';
 import {
   IcBas, IcDesindenter, IcHaut, IcIndenter, IcOuvrir, IcRattacher, IcSupprimer,
 } from '../design/icones';
+import { rappelsEffectifs } from '../time/rappels';
 import { COULEURS, LIBELLES_COULEUR, RACINE, type CleCouleur, type Rappel } from '../data/schema';
 import {
   basculerFait, basculerTache, decaler, definirCouleur, definirEcheance, definirRappels, deplacer, desindenter,
@@ -96,12 +97,13 @@ export function PanneauNoeud({
             </div>
             {date && (
               <div className="rappels" role="group" aria-label="Rappels">
-                {RAPPELS.map((r) => {
-                  const actif = n.rappels.includes(r.valeur);
+                {RAPPELS.filter((r) => r.valeur !== 'H-1' || heure).map((r) => {
+                  const actifs = rappelsEffectifs(n.rappels);
+                  const actif = actifs.includes(r.valeur);
                   return (
                     <button key={r.valeur} type="button" role="checkbox" aria-checked={actif}
                       className={`rappel t-cote${actif ? ' actif' : ''}`}
-                      onClick={() => definirRappels(doc, id, actif ? n.rappels.filter((x) => x !== r.valeur) : [...n.rappels, r.valeur])}>
+                      onClick={() => definirRappels(doc, id, actif ? actifs.filter((x) => x !== r.valeur) : [...actifs, r.valeur])}>
                       {r.libelle}
                     </button>
                   );

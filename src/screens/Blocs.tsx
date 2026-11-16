@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import * as Y from 'yjs';
 import { CaseACocher, Nuage } from '../design/signature';
 import { IcBas, IcHaut, IcSupprimer } from '../design/icones';
-import { deplacerBloc, poserBloc, supprimerBloc, texteBloc, type Bloc } from '../data/projet';
+import { dateBloc, deplacerBloc, poserBloc, supprimerBloc, texteBloc, type Bloc } from '../data/projet';
 import { compteARebours, dateCourte, dateParlee, enRetard } from '../time/dates';
 import { BoutonIcone } from '../ui/ui';
 
@@ -52,7 +52,7 @@ export function BlocEcheance({ doc, bloc, urgente, maintenant, autoFocus }: {
           type="date"
           className="date-cachee"
           value={date ?? ''}
-          onChange={(e) => poserBloc(doc, bloc.id, 'date', e.target.value || null)}
+          onChange={(e) => dateBloc(doc, bloc.id, e.target.value || null)}
         />
       </label>
     </div>

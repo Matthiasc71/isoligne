@@ -1,5 +1,6 @@
 import * as Y from 'yjs';
 import { nouvelId } from '../data/ids';
+import { rappelsParDefaut } from '../time/rappels';
 import { noeuds, RACINE, type CleCouleur, type DateLocale, type Rappel, type YNoeud } from '../data/schema';
 import { cleInsertion, comparerOrdre } from './ordre';
 
@@ -15,7 +16,10 @@ export interface Noeud {
   tache: boolean;
   fait: boolean;
   echeance: DateLocale | null;
-  rappels: Rappel[];
+  /** null : jamais réglés (rappels par défaut). */
+  rappels: Rappel[] | null;
+  /** Rappel personnalisé (date et heure, Paris). */
+  rappelPerso: DateLocale | null;
   couleur: CleCouleur | null;
   replie: boolean;
   aNote: boolean;
@@ -118,7 +122,8 @@ export function lireArbre(doc: Y.Doc): Arbre {
       tache: (y.get('tache') as boolean | undefined) ?? false,
       fait: (y.get('fait') as boolean | undefined) ?? false,
       echeance: (y.get('echeance') as string | null | undefined) ?? null,
-      rappels: (y.get('rappels') as Rappel[] | undefined) ?? [],
+      rappels: (y.get('rappels') as Rappel[] | undefined) ?? null,
+      rappelPerso: (y.get('rappelPerso') as string | null | undefined) ?? null,
       couleur: (y.get('couleur') as CleCouleur | null | undefined) ?? null,
       replie: (y.get('replie') as boolean | undefined) ?? false,
       aNote: (() => {
@@ -345,8 +350,17 @@ export function basculerFait(doc: Y.Doc, id: string): void {
   }, LOCAL);
 }
 
+/** Pose l'échéance ; une première échéance reçoit les rappels par défaut du moment. */
 export function definirEcheance(doc: Y.Doc, id: string, date: DateLocale | null): void {
-  poser(doc, id, 'echeance', date);
+  doc.transact(() => {
+    const y = yNoeud(doc, id);
+    if (!y) return;
+    y.set('echeance', date);
+    if (date && y.get('rappels') === undefined) y.set('rappels', rappelsParDefaut());
+  }, LOCAL);
+}
+export function definirRappelPerso(doc: Y.Doc, id: string, quand: DateLocale | null): void {
+  poser(doc, id, 'rappelPerso', quand);
 }
 export function definirRappels(doc: Y.Doc, id: string, rappels: Rappel[]): void {
   poser(doc, id, 'rappels', rappels);
