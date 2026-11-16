@@ -1,6 +1,6 @@
 # Isoligne : plan de construction (jalon 0)
 
-Statut : **proposé, en attente de validation.** Aucune ligne de code applicatif n'est écrite avant le feu vert.
+Statut : **validé le 16.11.2026** (réponses en section 7). Jalon 1 en cours.
 
 ---
 
@@ -32,8 +32,8 @@ Statut : **proposé, en attente de validation.** Aucune ligne de code applicatif
 | Cron Triggers | 5 par compte | 1 seul utilisé. |
 | D1 : écritures | 100 000 lignes/jour | Une écriture par projet modifié et par cycle, sinon rien. |
 | D1 : lectures | 5 M lignes/jour | Requêtes toujours indexées. |
-| D1 : stockage | **500 Mo par base**, 5 Go par compte, 10 bases max | **Point clé pour les images** (question Q3). |
-| D1 : taille max d'une ligne / BLOB | **2 000 000 octets** | Morceaux d'images de 1 Mo. |
+| D1 : stockage | **500 Mo par base**, 5 Go par compte, 10 bases max | Sans photos, une seule base suffit très largement. |
+| D1 : taille max d'une ligne / BLOB | **2 000 000 octets** | Un état compacté de projet plus gros est découpé en morceaux de 1 Mo. |
 | D1 : dépassement | Les requêtes renvoient des erreurs jusqu'à 00:00 UTC | L'app reste 100 % fonctionnelle hors ligne : la synchro attend simplement le lendemain. |
 
 - **Non confirmé** : la mention « appliqué strictement depuis septembre 2026 ». Je ne l'ai pas trouvée dans la doc, mais le comportement en cas de dépassement (refus des requêtes) y est bien décrit.
@@ -53,8 +53,8 @@ iPhone (PWA) / Ordinateur (navigateur)          Cloudflare (gratuit)
 │ ── Yjs (1 doc/projet)             │  HTTPS   │  /pair  /sync  /img        │
 │    └ y-indexeddb (source de vérité)│ ───────► │  /unfurl  /push  /s/<jeton>│
 │ ── Dexie : index, file d'envoi,   │  CORS    │  Cron */10 → Web Push      │
-│    images, réglages, recherche    │  strict  │ D1 : isoligne-data         │
-│ ── Service Worker (Workbox, push) │          │      isoligne-img-N (Q3)   │
+│    réglages, recherche            │  strict  │ D1 : isoligne-data         │
+│ ── Service Worker (Workbox, push) │          │  (tout chiffré côté client)│
 └───────────────────────────────────┘          └────────────────────────────┘
         GitHub Pages (statique)                  wrangler deploy via Actions
 ```
@@ -75,7 +75,7 @@ isoligne/
 │  ├─ outliner/       liste virtualisée, clavier, gestes
 │  ├─ editor/         TipTap (blocs texte, notes)
 │  ├─ graph/          React Flow, dispositions radial/arbre/libre/frise, export
-│  ├─ media/          images (compression, EXIF), croquis, liens
+│  ├─ media/          croquis, liens
 │  ├─ time/           échéances, rappels, calendrier, badges
 │  ├─ sync/           client de synchro, file d'envoi, appairage
 │  ├─ search/         MiniSearch
@@ -94,9 +94,9 @@ isoligne/
 ### Document Yjs (un par projet)
 | Clé | Type Yjs | Contenu |
 |---|---|---|
-| `meta` | `Y.Map` | id, titre, type, couleur (clé de palette), calque (01…), statut, épinglé, couverture (hash d'image), créé, modifié, révision |
-| `blocks` | `Y.Map<id, Y.Map>` | `kind` (texte, image, lien, croquis, arborescence, deadline, séparateur), `order` (index fractionnaire), contenu propre au bloc : texte = `Y.XmlFragment` (TipTap via y-prosemirror) ; image = hash + légende ; croquis = traits vectoriels + hash de la miniature ; lien = url + aperçu ; arborescence = id du nœud racine de la branche ; deadline = id du nœud |
-| `nodes` | `Y.Map<id, Y.Map>` | parent, order, texte (`Y.Text`), tâche, fait, échéance (date et heure optionnelle), rappels[], couleur?, replié, note (`Y.XmlFragment`), images[], `deleted` (pierre tombale) |
+| `meta` | `Y.Map` | id, titre, type, couleur (clé de palette), calque (01…), statut, épinglé, créé, modifié, révision |
+| `blocks` | `Y.Map<id, Y.Map>` | `kind` (texte, lien, croquis, arborescence, deadline, séparateur), `order` (index fractionnaire), contenu propre au bloc : texte = `Y.XmlFragment` (TipTap via y-prosemirror) ; croquis = traits vectoriels + légende (« FIG. n »), miniature calculée sur l'appareil ; lien = url + aperçu ; arborescence = id du nœud racine de la branche ; deadline = id du nœud |
+| `nodes` | `Y.Map<id, Y.Map>` | parent, order, texte (`Y.Text`), tâche, fait, échéance (date et heure optionnelle), rappels[], couleur?, replié, note (`Y.XmlFragment`), `deleted` (pierre tombale) |
 | `links` | `Y.Map<id, Y.Map>` | de, vers, libellé, style (trait, pointillé) |
 | `positions` | `Y.Map<disposition, Y.Map<nodeId, {x,y}>>` | nœuds épinglés à la main, par disposition |
 
@@ -106,10 +106,10 @@ isoligne/
 - **Numérotation 1 / 1.1 / 1.2** : calculée à l'affichage, jamais stockée.
 
 ### Dexie (IndexedDB)
-`projects` (index de l'accueil : titre, couleur, prochaine échéance, avancement), `deadlines` (index du calendrier et des rappels), `images` (hash → blob + miniature), `outbox` (mises à jour Yjs et images à envoyer), `syncState` (dernier numéro de séquence serveur par projet), `settings`, `searchIndex` (MiniSearch sérialisé).
+`projects` (index de l'accueil : titre, couleur, prochaine échéance, avancement), `deadlines` (index du calendrier et des rappels), `outbox` (mises à jour Yjs chiffrées à envoyer), `syncState` (dernier numéro de séquence serveur par projet), `settings`, `searchIndex` (MiniSearch sérialisé).
 
 ### D1 (versionné dans `worker/migrations/`)
-`devices` (id, hash du jeton, nom, créé, vu, révoqué), `pairing` (hash du code, expiration, tentatives), `rate_limit`, `updates` (projet, seq, blob, appareil), `projects_head` (projet, seq max), `images` (hash, mime, taille, nb de morceaux, base), `image_chunks` (hash, index, data ≤ 1 Mo), `push_subs`, `reminders` (date d'envoi, projet, nœud, texte court), `shares` (hash du jeton, projet, expiration, instantané), `usage`.
+`devices` (id, hash du jeton, nom, créé, vu, révoqué), `pairing` (hash du code, expiration, tentatives), `rate_limit`, `updates` (projet, seq, morceau, blob chiffré, appareil), `projects_head` (projet, seq max), `push_subs`, `reminders` (date d'envoi, texte chiffré), `shares` (hash du jeton, expiration, instantané chiffré), `usage`.
 
 ---
 
@@ -118,9 +118,8 @@ isoligne/
 1. **Envoi** : chaque modification locale va dans `outbox`. Toutes les 30 s (et à l'ouverture, au retour au premier plan, au retour du réseau), les mises à jour en attente d'un projet sont fusionnées **sur l'appareil** (`Y.mergeUpdates`) et envoyées en **une seule ligne D1**.
 2. **Réception** : `GET /sync/heads` renvoie le numéro de séquence max de chaque projet, en une lecture indexée. Seuls les projets en retard sont téléchargés (`seq > dernier connu`).
 3. **Compactage** : au-delà de 50 mises à jour pour un projet, un appareil envoie l'état complet (`encodeStateAsUpdate`) qui remplace les lignes ≤ seq dans un `batch()` atomique. Le calcul est fait côté appareil, pas dans le Worker.
-4. **Images** : empreinte SHA-256 calculée sur l'appareil. `HEAD /img/<hash>` pour ne jamais envoyer deux fois la même image, puis envoi par morceaux de 1 Mo avec reprise.
-5. **Garantie anti-perte** : une mise à jour ne quitte `outbox` qu'après accusé de réception du serveur. Yjs rend les renvois idempotents.
-6. **Jauge** : `GET /usage` renvoie la taille des bases (avec `PRAGMA` ou le cumul de la table `usage`). Alerte affichée à 80 %.
+4. **Garantie anti-perte** : une mise à jour ne quitte `outbox` qu'après accusé de réception du serveur. Yjs rend les renvois idempotents.
+5. **Jauge** : `GET /usage` renvoie la taille des bases (avec `PRAGMA` ou le cumul de la table `usage`). Alerte affichée à 80 %.
 
 **Appairage** :
 - Le premier appareil appelle `POST /space` et reçoit son jeton.
@@ -134,10 +133,9 @@ isoligne/
 
 | Sujet | Choix |
 |---|---|
-| Aperçus de liens (`/unfurl`) | Le Worker refuse les IP littérales privées et locales, `localhost`, `.local` et `.internal`, et résout le nom via DoH (`1.1.1.1`) pour refuser une adresse privée. Il suit 3 redirections au plus (`redirect: 'manual'`, contrôle à chaque saut), avec un délai de 5 s et une limite de 512 Ko de HTML et 1 Mo d'image. Il extrait les balises OG en texte brut. **La miniature de ≈ 30 Ko est fabriquée sur l'appareil** (canvas), car le Worker ne peut pas redimensionner une image en 10 ms de CPU. Elle est ensuite stockée comme une image ordinaire. |
+| Aperçus de liens (`/unfurl`) | Le Worker refuse les IP littérales privées et locales, `localhost`, `.local` et `.internal`, et résout le nom via DoH (`1.1.1.1`) pour refuser une adresse privée. Il suit 3 redirections au plus (`redirect: 'manual'`, contrôle à chaque saut), avec un délai de 5 s et une limite de 512 Ko de HTML. Il extrait titre, site et description (balises OG) en texte brut, sans image. Il ne stocke rien. |
 | Web Push | VAPID et chiffrement aes128gcm (RFC 8291) écrits avec WebCrypto, sans dépendance Node, et testés contre les vecteurs de la RFC. Le Cron toutes les 10 min n'envoie qu'un petit nombre de notifications par exécution, pour tenir dans les 10 ms de CPU (à mesurer au jalon 5). |
-| Images | Décodage avec `createImageBitmap` (orientation corrigée), réencodage par canvas : les EXIF et le GPS disparaissent d'office. WebP si `toBlob('image/webp')` le permet, sinon JPEG. Qualité ajustée par dichotomie jusqu'à ≈ 300 Ko, miniature ≈ 30 Ko. Seules les images sont acceptées : `image/jpeg`, `png`, `webp`, `heic` si le navigateur sait le décoder. |
-| Partage en lecture seule | **L'instantané est calculé sur l'appareil** (JSON de la page + SVG du graphe) et envoyé au Worker. Le Worker sert `/s/<jeton>` en HTML statique, avec une CSP stricte, `noindex` et `X-Robots-Tag`, et les images via `/s/<jeton>/img/<hash>`. |
+| Partage en lecture seule | **L'instantané est calculé et chiffré sur l'appareil** (JSON de la page + SVG du graphe et des croquis). Le Worker sert `/s/<jeton>` : une page de lecture statique qui déchiffre avec la clé du fragment `#`, avec une CSP stricte, `noindex` et `X-Robots-Tag`. |
 | Rappels | Calculs dans le fuseau Europe/Paris avec `@date-fns/tz`, testés autour des changements d'heure. L'appareil pousse la liste des rappels à venir dans la table D1 `reminders`, lue par le Cron. |
 | Graphe 500 nœuds | Nœuds React Flow mémoïsés, `onlyRenderVisibleElements`, simulation d'un d3-force dans un Web Worker, transitions de 300 ms via des interpolations de positions (désactivées si « réduire les animations »). |
 | Recherche | MiniSearch avec normalisation NFD (accents ignorés), `fuzzy: 0.2` et `prefix: true`. Index mis à jour à chaque modification, en différé. |
@@ -157,8 +155,8 @@ isoligne/
    - Yjs + Dexie, opérations d'arbre et tests de propriétés, outliner (clavier + gestes iPhone), page à blocs (texte, arborescence, tâches, deadlines), accueil.
    - Hors ligne (Workbox), captures clair/sombre, `critique`, `audit` et `polish`.
 2. **Graphes** : 4 dispositions, édition dans les deux sens, mode « Relier », épinglage et « Réorganiser », mini-carte, export SVG/PNG, test des 500 nœuds.
-3. **Médias** : images (compression, EXIF, FIG. n), croquis (perfect-freehand), liens (Worker `/unfurl`, premier déploiement du Worker en local avec `wrangler dev`).
-4. **Synchro** : Worker + D1, appairage par QR / code, file d'envoi, images en morceaux, tests de convergence à deux appareils hors ligne, jauge.
+3. **Médias** : croquis (perfect-freehand, FIG. n), liens (Worker `/unfurl`, premier déploiement du Worker en local avec `wrangler dev`).
+4. **Synchro** : Worker + D1, appairage par QR / code, file d'envoi, chiffrement de bout en bout, clé de secours, tests de convergence à deux appareils hors ligne, jauge.
 5. **Temps** : calendrier (mois, semaine, agenda, glisser), rappels, Web Push + Cron, API Badging, demande d'autorisation au bon moment.
 6. **Bonus** : recherche, import/export Markdown & OPML, sauvegarde zip, partage en lecture seule, modèles de départ, Cmd+K, aide `?`.
 7. **Mise en ligne** : GitHub Pages + Worker via Actions, README (sauvegarder, restaurer, révoquer, quotas), guide d'installation iPhone.
@@ -167,5 +165,25 @@ isoligne/
 
 ---
 
-## 7. Questions ouvertes
-Voir la réponse dans la conversation. Les réponses seront reportées ici.
+## 7. Décisions du 16.11.2026 (réponses aux questions)
+
+| # | Question | Réponse | Conséquence |
+|---|---|---|---|
+| 1 | Maquettes | Fichier « 3 directions de style » fourni | Référence : **Blueprint v2** (accueil sombre, projet sombre, graphe sombre, calendrier clair), captures dans `design/maquettes/`. Les autres directions (Contour lines, ASCII) sont écartées. |
+| 2 | Dépôt public | Oui | GitHub Pages gratuit. Aucune donnée dans le dépôt. |
+| 3 | Images | **On oublie les photos** | Pas de bloc image, pas de couverture, pas d'ajout de photo, pas de stockage de blobs dans D1 : **une seule base D1**. Les croquis restent (vectoriels, dans Yjs ; « FIG. n » s'applique aux croquis). Aperçus de liens en texte seul (titre, site, description). |
+| 4 | Chiffrement de bout en bout | Oui | Voir section 8. |
+| 5 | Compte Cloudflare | Existe déjà | Utilisé à partir du jalon 3. |
+| 6 | Un arbre par projet | Oui, **avec des branches dans les branches, en poupée russe** | Profondeur illimitée. Tout nœud peut être **ouvert** : la liste et le graphe se recentrent sur lui (fil d'Ariane pour remonter), et il peut porter sa propre note en texte riche. Le graphe radial dessine ses cercles de construction à partir du nœud ouvert. |
+
+## 8. Chiffrement de bout en bout
+
+- **Clé d'espace** : 256 bits, créée par le premier appareil, conservée dans IndexedDB (`CryptoKey` non extractible pour l'usage courant, plus une copie chiffrée pour la transmission à un nouvel appareil).
+- **Tout ce qui part au serveur est chiffré** (AES-256-GCM, nonce aléatoire de 96 bits) : mises à jour Yjs, états compactés, textes des rappels, instantanés partagés. Le serveur ne voit que des identifiants aléatoires, des tailles et des dates d'envoi des rappels.
+- **Appairage** :
+  - **QR code** : il contient l'URL avec la clé dans le fragment `#` (jamais envoyé au serveur) et le code d'appairage. C'est le chemin sûr par défaut.
+  - **Code à 8 caractères saisi à la main** : le nouvel appareil envoie une clé publique éphémère (ECDH P-256). Les deux écrans affichent une **empreinte de 6 chiffres à comparer**, puis l'iPhone chiffre la clé d'espace pour le nouvel appareil. Sans cette comparaison, le serveur pourrait s'interposer.
+- **Notifications** : le Cron n'envoie qu'un texte chiffré. Le service worker de l'appareil le déchiffre et affiche « J-1 · Repérages ».
+- **Liens partagés** : `/s/<jeton>#<clé>`. Le Worker sert une page de lecture statique qui déchiffre l'instantané dans le navigateur ; le serveur ne peut pas le lire.
+- **Aperçus de liens** : seule exception. Le Worker voit l'URL demandée, sans la stocker.
+- **Clé de secours** : 24 mots ou un QR imprimable, proposés dès la création de l'espace et dans les Réglages. Sans elle, si tous les appareils sont perdus et qu'il n'y a pas de sauvegarde zip, les données ne sont plus récupérables. L'app le dit clairement, une fois.
