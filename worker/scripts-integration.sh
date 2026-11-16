@@ -10,3 +10,7 @@ PID=$!
 trap 'kill $PID 2>/dev/null || true' EXIT
 for _ in $(seq 1 60); do curl -s -o /dev/null http://127.0.0.1:8788/ && break; sleep 1; done
 WORKER_URL=http://127.0.0.1:8788 npx vitest run test/integration.test.ts
+# Le test précédent épuise volontairement la limite de débit : on la remet à zéro.
+npx wrangler d1 execute isoligne --local --command "DELETE FROM limites" > /dev/null
+# De bout en bout : deux vrais services de synchro de l'app contre ce Worker.
+(cd .. && WORKER_URL=http://127.0.0.1:8788 npx vitest run tests/unit/synchro-reelle.test.ts)

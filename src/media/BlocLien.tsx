@@ -4,7 +4,7 @@ import { IcSuite } from '../design/icones';
 import { supprimerBloc, type Bloc } from '../data/projet';
 import { BoutonIcone, Choix, Feuille } from '../ui/ui';
 import { useAppuiLong } from '../ui/gestes';
-import { ADRESSE_WORKER, demanderApercu, normaliserUrl, poserApercu, poserUrl, siteDe, type EtatLien } from './lien';
+import { ADRESSE_WORKER, apercusPossibles, demanderApercu, normaliserUrl, poserApercu, poserUrl, siteDe, type EtatLien } from './lien';
 
 /** Champ d'adresse avec « Coller » (geste explicite : le presse-papiers n'est lu qu'à la demande). */
 export function SaisieLien({ initiale = '', onValider, autoFocus = false }: { initiale?: string; onValider: (url: string) => void; autoFocus?: boolean }) {
@@ -62,13 +62,13 @@ export function BlocLien({ doc, bloc, autoFocus }: { doc: Y.Doc; bloc: Bloc; aut
 
   // Aperçu demandé au Worker ; s'il est hors ligne, on réessaie au retour du réseau.
   useEffect(() => {
-    if (etat !== 'attente' || !url || !ADRESSE_WORKER) return;
+    if (etat !== 'attente' || !url || !apercusPossibles()) return;
     let actif = true;
     const essayer = async () => {
       const a = await demanderApercu(url);
       if (!actif) return;
       if (a) poserApercu(doc, bloc.id, a);
-      else if (navigator.onLine) poserApercu(doc, bloc.id, null);
+      else if (navigator.onLine !== false && apercusPossibles()) poserApercu(doc, bloc.id, null);
     };
     void essayer();
     const enLigne = () => void essayer();

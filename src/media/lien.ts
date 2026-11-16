@@ -59,11 +59,17 @@ export function poserApercu(doc: Y.Doc, id: string, a: Apercu | null): void {
   }, LOCAL);
 }
 
-/** Demande l'aperçu au Worker. `null` : hors ligne, Worker absent ou page illisible. */
+let jetonAppareil: string | null = null;
+/** Jeton de l'appareil appairé : les aperçus sont réservés aux appareils de l'espace. */
+export function definirJetonApercus(jeton: string | null): void { jetonAppareil = jeton; }
+export function apercusPossibles(): boolean { return Boolean(ADRESSE_WORKER && jetonAppareil); }
+
+/** Demande l'aperçu au Worker. `null` : hors ligne, appareil non appairé ou page illisible. */
 export async function demanderApercu(url: string, signal?: AbortSignal): Promise<Apercu | null> {
-  if (!ADRESSE_WORKER || !navigator.onLine) return null;
+  if (!ADRESSE_WORKER || !jetonAppareil || navigator.onLine === false) return null;
   try {
     const r = await fetch(`${ADRESSE_WORKER}/unfurl?url=${encodeURIComponent(url)}`, {
+      headers: { authorization: `Bearer ${jetonAppareil}` },
       signal: signal ?? AbortSignal.timeout(8000),
       credentials: 'omit',
       referrerPolicy: 'no-referrer',

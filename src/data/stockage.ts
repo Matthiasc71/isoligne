@@ -5,6 +5,7 @@ import { LOCAL } from '../tree/arbre';
 import { nouvelId } from './ids';
 import { initialiserProjet, resumer, type Echeance, type InitProjet, type ResumeProjet } from './projet';
 import { blocs, meta, noeuds } from './schema';
+import { ID_ESPACE, type EtatProjet, type MemoireSynchro, type SourceDocs } from '../sync/moteur';
 
 // ───────────────────────────── Index local (Dexie) ─────────────────────────────
 
@@ -20,6 +21,7 @@ export class BaseIndex extends Dexie {
   projets!: EntityTable<ResumeProjet, 'id'>;
   echeances!: EntityTable<LigneEcheance, 'id'>;
   reglages!: EntityTable<Reglage, 'cle'>;
+  synchro!: EntityTable<EtatProjet, 'projet'>;
 
   constructor(nom = 'isoligne-index') {
     super(nom);
@@ -28,6 +30,8 @@ export class BaseIndex extends Dexie {
       echeances: 'id, projetId, date',
       reglages: 'cle',
     });
+    // Jalon 4 : état confirmé de la synchro, par projet.
+    this.version(2).stores({ synchro: 'projet' });
   }
 }
 
@@ -60,6 +64,28 @@ export class Stockage {
     const p = new IndexeddbPersistence(`${prefixe}:espace`, this.espace);
     this.persistances.push(p);
     this.espacePret = p.whenSynced.then(() => this.reconcilier());
+    // Un projet créé ou supprimé sur un autre appareil arrive par l'espace : on met l'index à niveau.
+    this.espace.getMap('projets').observe(() => { void this.espacePret.then(() => this.reconcilier()); });
+  }
+
+  /** Accès aux documents pour le moteur de synchro. */
+  sourceSynchro(): SourceDocs {
+    return {
+      ids: () => this.idsProjets(),
+      doc: async (id) => {
+        if (id === ID_ESPACE) { await this.espacePret; return this.espace; }
+        const p = this.ouvrir(id);
+        await p.pret;
+        return p.doc;
+      },
+    };
+  }
+
+  memoireSynchro(): MemoireSynchro {
+    return {
+      lire: (projet) => this.index.synchro.get(projet),
+      ecrire: async (e) => { await this.index.synchro.put({ ...e }); },
+    };
   }
 
   /** Projets connus de l'espace (non supprimés). */
