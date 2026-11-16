@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  # Aucune télémétrie des outils de design.
+  DO_NOT_TRACK: '1'
+  IMPECCABLE_NO_TELEMETRY: '1'
+
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typage
+        run: npm run typecheck
+      - name: Tests unitaires (arbre, convergence hors ligne, dates, stockage)
+        run: npm test
+      - name: Détecteur d'anti-patterns (doit renvoyer zéro)
+        run: npx impeccable detect --github src/
+      - name: Navigateurs Playwright (Chromium + WebKit)
+        run: npx playwright install --with-deps chromium webkit
+      - name: Tests de bout en bout (iPhone WebKit, iPhone et ordinateur Chromium)
+        run: npm run e2e
+      - name: Build
+        run: npm run build
