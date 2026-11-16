@@ -4,6 +4,7 @@ name: Déployer le Worker
 # Secrets requis (Settings → Secrets and variables → Actions) :
 #   CLOUDFLARE_API_TOKEN  : jeton « Edit Cloudflare Workers » + D1 Edit
 #   CLOUDFLARE_ACCOUNT_ID : identifiant du compte Cloudflare
+# Prérequis : un sous-domaine workers.dev choisi une fois dans le tableau de bord Cloudflare.
 # Le sel des jetons (SEL) est généré ici au premier déploiement, jamais affiché ni versionné.
 on:
   workflow_dispatch:
@@ -63,6 +64,7 @@ jobs:
 
       - name: Déploiement
         run: |
+          set -o pipefail
           npx wrangler deploy | tee deploiement.log
           URL=$(grep -oE 'https://isoligne-api\.[a-z0-9-]+\.workers\.dev' deploiement.log | head -1)
           [ -n "$URL" ] || { echo "::error::Adresse workers.dev introuvable"; exit 1; }
