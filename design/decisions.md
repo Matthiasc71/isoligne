@@ -71,3 +71,9 @@ Requête : « outil de projets personnel, style blueprint/cyanotype, très épur
 - Le brief annonce 13 groupes de 4. Avec 2 caractères de contrôle, la clé en faisait 13 et demi.
 - Les 256 bits du secret occupent 51,2 caractères base32 : le 52ᵉ porte 4 bits libres, qui servent de contrôle (SHA-256). 13 groupes pile.
 - Une faute de frappe est détectée localement 15 fois sur 16. Sinon, le serveur refuse la clé : elle ne correspond à aucun espace.
+
+## Déploiement du Worker par GitHub Actions (16.11.2026)
+- Depuis la session cloud, l'API Cloudflare répond 429 (code 971, « ralentissez ») dès la première requête, avec un délai qui se renouvelle : l'adresse de sortie partagée est limitée. Pas de contournement.
+- Déploiement par un workflow lancé à la main (`deployer-worker.yml`). Il crée la base D1 au premier passage (Europe de l'Ouest), applique les migrations, déploie, puis génère le sel une seule fois dans la CI : jamais affiché ni versionné.
+- Il vérifie ensuite que le Worker répond et qu'un faux jeton est refusé en 401 : preuve que D1 et le sel fonctionnent.
+- Secrets GitHub : `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.

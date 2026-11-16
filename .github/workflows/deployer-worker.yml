@@ -1,0 +1,102 @@
+name: Déployer le Worker
+
+# Lancé à la main (onglet Actions → « Déployer le Worker » → Run workflow).
+# Secrets requis (Settings → Secrets and variables → Actions) :
+#   CLOUDFLARE_API_TOKEN  : jeton « Edit Cloudflare Workers » + D1 Edit
+#   CLOUDFLARE_ACCOUNT_ID : identifiant du compte Cloudflare
+# Le sel des jetons (SEL) est généré ici au premier déploiement, jamais affiché ni versionné.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deployer-worker
+  cancel-in-progress: false
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  WRANGLER_SEND_METRICS: 'false'
+  DO_NOT_TRACK: '1'
+
+jobs:
+  deployer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+      - run: npm ci
+      - name: Vérifications avant envoi (typage, tests de sécurité)
+        run: npm run typecheck && npm test
+
+      - name: Secrets présents
+        run: |
+          [ -n "$CLOUDFLARE_API_TOKEN" ] || { echo "::error::Secret CLOUDFLARE_API_TOKEN absent"; exit 1; }
+          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || { echo "::error::Secret CLOUDFLARE_ACCOUNT_ID absent"; exit 1; }
+
+      - name: Base D1 (créée au premier passage)
+        run: |
+          trouver() { npx wrangler d1 list --json | jq -r '.[] | select(.name == "isoligne") | .uuid'; }
+          ID=$(trouver)
+          if [ -z "$ID" ]; then
+            # Depuis un dossier vide : wrangler n'a aucune config à modifier. Base en Europe de l'Ouest.
+            (cd "$RUNNER_TEMP" && "$GITHUB_WORKSPACE/worker/node_modules/.bin/wrangler" d1 create isoligne --location weur > /dev/null)
+            ID=$(trouver)
+          fi
+          [ -n "$ID" ] || { echo "::error::Base D1 introuvable après création"; exit 1; }
+          # Un identifiant de base n'est pas un secret ; il n'est inscrit que sur le runner.
+          sed -i "s/00000000-0000-0000-0000-000000000000/$ID/" wrangler.jsonc
+          echo "Base D1 : $ID"
+
+      - name: Migrations
+        run: npx wrangler d1 migrations apply isoligne --remote
+
+      - name: Déploiement
+        run: |
+          npx wrangler deploy | tee deploiement.log
+          URL=$(grep -oE 'https://isoligne-api\.[a-z0-9-]+\.workers\.dev' deploiement.log | head -1)
+          [ -n "$URL" ] || { echo "::error::Adresse workers.dev introuvable"; exit 1; }
+          echo "URL=$URL" >> "$GITHUB_ENV"
+
+      - name: Sel des jetons (une seule fois, jamais affiché)
+        run: |
+          if npx wrangler secret list --format json | jq -e '.[] | select(.name == "SEL")' > /dev/null; then
+            echo "SEL déjà défini : inchangé (le changer invaliderait tous les appareils)."
+          else
+            openssl rand -base64 48 | tr -d '\n' | npx wrangler secret put SEL > /dev/null
+            echo "SEL généré."
+          fi
+
+      - name: Vérification en ligne
+        run: |
+          for i in 1 2 3 4 5 6; do
+            R=$(curl -sS "$URL/" || true)
+            echo "$R" | jq -e '.service == "isoligne"' > /dev/null && break
+            sleep 5
+          done
+          echo "$R" | jq -e '.service == "isoligne"' > /dev/null || { echo "::error::Le Worker ne répond pas"; exit 1; }
+          # Un appel authentifié doit être refusé proprement (401), preuve que D1 et SEL répondent.
+          # (Le sel vient d'être posé : quelques secondes de propagation possibles.)
+          for i in 1 2 3 4 5 6; do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' -H 'authorization: Bearer aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' "$URL/usage")
+            [ "$CODE" = "401" ] && break
+            sleep 5
+          done
+          [ "$CODE" = "401" ] || { echo "::error::/usage renvoie $CODE au lieu de 401"; exit 1; }
+          {
+            echo "### Worker en ligne"
+            echo ""
+            echo "Adresse : $URL"
+            echo ""
+            echo "À utiliser comme VITE_WORKER_URL pour le build de l'app."
+          } >> "$GITHUB_STEP_SUMMARY"
