@@ -219,3 +219,21 @@
   height: 7px;
   background: var(--redline);
 }
+
+/* Onglets soulignés (graphe, calendrier) */
+.onglets {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid var(--grille-majeure);
+}
+.onglet {
+  min-height: var(--cible);
+  padding: 0;
+  color: var(--trait-2);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.onglet.actif {
+  color: var(--trait);
+  border-bottom-color: var(--trait);
+}

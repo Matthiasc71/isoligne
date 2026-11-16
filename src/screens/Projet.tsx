@@ -80,6 +80,24 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
     allerBranche(noeudRacine.parent === RACINE ? null : noeudRacine.parent);
   }, [noeudRacine, allerBranche]);
 
+  // Ouverture ciblée (calendrier, notification) : la branche qui contient le nœud, puis son panneau.
+  useEffect(() => {
+    if (route.noeud) {
+      const n = arbre.parId.get(route.noeud);
+      if (!n) return;
+      aller({ ecran: 'projet', id: route.id, branche: n.parent === RACINE ? null : n.parent, vue: 'page' }, true);
+      setPanneau({ id: n.id });
+    } else if (route.bloc) {
+      const id = route.bloc;
+      aller({ ecran: 'projet', id: route.id, branche: null, vue: 'page' }, true);
+      requestAnimationFrame(() => {
+        const el = document.querySelector<HTMLElement>(`[data-bloc="${CSS.escape(id)}"]`);
+        el?.scrollIntoView({ block: 'center' });
+        el?.querySelector<HTMLElement>('input')?.focus({ preventScroll: true });
+      });
+    }
+  }, [route.noeud, route.bloc, route.id, arbre]);
+
   // Cmd/Ctrl+Z hors des champs : annuler.
   useEffect(() => {
     const f = (e: KeyboardEvent) => {
@@ -222,7 +240,7 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
         <div className="projet-section">{nomenclature}</div>
       ) : (
         blocs.filter((b) => b !== couverture || reorganiser).map((b, i, liste) => (
-          <section key={b.id} className="projet-section" aria-label={b.type === 'arbre' ? 'Arborescence' : undefined}>
+          <section key={b.id} data-bloc={b.id} className="projet-section" aria-label={b.type === 'arbre' ? 'Arborescence' : undefined}>
             {reorganiser && <CommandesBloc doc={doc} bloc={b} premier={i === 0} dernier={i === liste.length - 1} onSupprime={(nom) => { annuler.stopCapturing(); setAvis(`${nom} supprimé`); }} />}
             {b.type === 'arbre' && nomenclature}
             {b.type === 'texte' && <BlocTexte bloc={b} autoFocus={nouveauBloc === b.id} />}

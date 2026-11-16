@@ -30,25 +30,11 @@
   white-space: nowrap;
 }
 
-.onglets {
-  display: flex;
-  gap: 24px;
+.graphe .onglets {
   padding: 0 var(--marge);
-  border-bottom: 1px solid var(--grille-majeure);
 }
 .graphe-large .onglets {
   padding-top: 28px;
-}
-.onglet {
-  min-height: var(--cible);
-  padding: 0;
-  color: var(--trait-2);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-}
-.onglet.actif {
-  color: var(--trait);
-  border-bottom-color: var(--trait);
 }
 
 .toile {

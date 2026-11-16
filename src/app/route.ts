@@ -4,7 +4,7 @@ export type Vue = 'page' | 'graphe' | 'frise';
 
 export type Route =
   | { ecran: 'accueil' }
-  | { ecran: 'projet'; id: string; branche: string | null; vue: Vue }
+  | { ecran: 'projet'; id: string; branche: string | null; vue: Vue; noeud?: string; bloc?: string }
   | { ecran: 'calendrier' }
   | { ecran: 'recherche' }
   | { ecran: 'reglages' }
@@ -24,6 +24,9 @@ export function lireRoute(hash: string = location.hash): Route {
           id: parts[1],
           branche: parts[2] === 'b' && parts[3] ? parts[3] : null,
           vue: vue === 'graphe' || vue === 'frise' ? vue : 'page',
+          // Ouverture ciblée (calendrier, notification) : un nœud ou un bloc Échéance.
+          ...(params.get('noeud') ? { noeud: params.get('noeud')! } : {}),
+          ...(params.get('bloc') ? { bloc: params.get('bloc')! } : {}),
         };
       }
       return { ecran: 'accueil' };
@@ -40,7 +43,11 @@ export function lien(route: Route): string {
     case 'accueil': return '#/';
     case 'projet': {
       const b = route.branche ? `/b/${encodeURIComponent(route.branche)}` : '';
-      const v = route.vue !== 'page' ? `?vue=${route.vue}` : '';
+      const q = new URLSearchParams();
+      if (route.vue !== 'page') q.set('vue', route.vue);
+      if (route.noeud) q.set('noeud', route.noeud);
+      if (route.bloc) q.set('bloc', route.bloc);
+      const v = q.toString() ? `?${q.toString()}` : '';
       return `#/p/${encodeURIComponent(route.id)}${b}${v}`;
     }
     default: return `#/${route.ecran}`;
