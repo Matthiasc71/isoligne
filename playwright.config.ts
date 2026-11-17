@@ -17,6 +17,9 @@ const ordinateur = {
 export default defineConfig({
   testDir: 'tests/e2e',
   fullyParallel: true,
+  // Une seconde tentative en CI : la frappe automatisée de WebKit, juste après Entrée,
+  // place parfois la première lettre en fin de ligne (non reproduit hors automatisation ; à vérifier sur iPhone).
+  retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     baseURL: 'http://localhost:4173/isoligne/',

@@ -110,3 +110,8 @@ Requête : « outil de projets personnel, style blueprint/cyanotype, très épur
 
 ## Recherche (17.11.2026)
 - Textes cherchables extraits à chaque indexation dans une table Dexie (`textes`). MiniSearch construit l'index à l'ouverture de l'écran, sans ouvrir les projets. Une faute tolérée à partir de 4 lettres. Tous les mots sont requis.
+
+## Frappe juste après Entrée sous WebKit automatisé (17.11.2026)
+- En CI, sous WebKit, la première lettre tapée juste après Entrée finit parfois en fin de ligne (« ournageT »). Ce n'est pas systématique.
+- Écarté : le focus voulu, appliqué en retard (garde-fou ajouté) ; le champ contrôlé par le seul Yjs (valeur locale ajoutée) ; le décalage dû aux indices (déplacés).
+- Non reproductible ici (WebKit absent de la session). La CI accepte une seconde tentative pour les e2e. **À vérifier sur iPhone réel** : taper vite juste après « Retour ».
