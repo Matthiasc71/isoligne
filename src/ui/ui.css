@@ -237,3 +237,21 @@
   color: var(--trait);
   border-bottom-color: var(--trait);
 }
+
+/* Puces cochables (filtres, rappels) : 44 px, pleines quand cochées. */
+.puces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.puce {
+  min-height: var(--cible);
+  padding: 0 14px;
+  border: 1px solid var(--trait-2);
+  color: var(--trait);
+}
+.puce.actif {
+  background: var(--trait);
+  border-color: var(--trait);
+  color: var(--fond);
+}

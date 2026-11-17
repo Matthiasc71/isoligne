@@ -5,6 +5,7 @@ import { LOCAL } from '../tree/arbre';
 import { nouvelId } from './ids';
 import { initialiserProjet, resumer, type Echeance, type InitProjet, type ResumeProjet } from './projet';
 import { blocs, meta, noeuds } from './schema';
+import { textesDuProjet, type TexteCherchable } from '../search/textes';
 import { ID_ESPACE, type EtatProjet, type MemoireSynchro, type SourceDocs } from '../sync/moteur';
 
 // ───────────────────────────── Index local (Dexie) ─────────────────────────────
@@ -22,6 +23,7 @@ export class BaseIndex extends Dexie {
   echeances!: EntityTable<LigneEcheance, 'id'>;
   reglages!: EntityTable<Reglage, 'cle'>;
   synchro!: EntityTable<EtatProjet, 'projet'>;
+  textes!: EntityTable<TexteCherchable, 'id'>;
 
   constructor(nom = 'isoligne-index') {
     super(nom);
@@ -32,6 +34,8 @@ export class BaseIndex extends Dexie {
     });
     // Jalon 4 : état confirmé de la synchro, par projet.
     this.version(2).stores({ synchro: 'projet' });
+    // Jalon 6 : textes cherchables (recherche plein texte locale).
+    this.version(3).stores({ textes: 'id, projetId' });
   }
 }
 
@@ -104,7 +108,9 @@ export class Stockage {
   private async reconcilier(): Promise<void> {
     const ids = this.idsProjets();
     const connus = new Set((await this.index.projets.toCollection().primaryKeys()) as string[]);
-    for (const id of ids) if (!connus.has(id)) await this.ouvrir(id).pret;
+    // Projets indexés avant la recherche plein texte (jalon 6) : on les relit une fois.
+    const cherchables = new Set((await this.index.textes.orderBy('projetId').uniqueKeys()) as string[]);
+    for (const id of ids) if (!connus.has(id) || !cherchables.has(id)) await this.ouvrir(id).pret;
     for (const id of connus) if (!ids.includes(id)) await this.retirerIndex(id);
   }
 
@@ -171,17 +177,21 @@ export class Stockage {
     clearTimeout(this.minuteries.get(id));
     if (!meta(doc).has('titre')) return; // document encore vide
     const { resume, echeances } = resumer(id, doc);
-    await this.index.transaction('rw', this.index.projets, this.index.echeances, async () => {
+    const textes = textesDuProjet(id, doc);
+    await this.index.transaction('rw', this.index.projets, this.index.echeances, this.index.textes, async () => {
       await this.index.projets.put(resume);
       await this.index.echeances.where('projetId').equals(id).delete();
       await this.index.echeances.bulkPut(echeances.map((e) => ({ ...e, id: `${id}:${e.cible}`, projetId: id })));
+      await this.index.textes.where('projetId').equals(id).delete();
+      await this.index.textes.bulkPut(textes);
     });
   }
 
   private async retirerIndex(id: string): Promise<void> {
-    await this.index.transaction('rw', this.index.projets, this.index.echeances, async () => {
+    await this.index.transaction('rw', this.index.projets, this.index.echeances, this.index.textes, async () => {
       await this.index.projets.delete(id);
       await this.index.echeances.where('projetId').equals(id).delete();
+      await this.index.textes.where('projetId').equals(id).delete();
     });
   }
 
