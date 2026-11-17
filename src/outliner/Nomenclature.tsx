@@ -23,7 +23,8 @@ export interface ActionsNomenclature {
   remonter: () => void;
 }
 
-interface Focus { id: string; pos: number | 'fin' }
+/** Focus voulu ; `valeur` : texte attendu dans la ligne (si l'on a déjà tapé autre chose, on ne bouge plus le curseur). */
+interface Focus { id: string; pos: number | 'fin'; valeur?: string }
 
 /** Fonctions stables passées aux lignes : une ligne ne se redessine que si ses données changent. */
 interface Controleur {
@@ -88,6 +89,8 @@ export function Nomenclature({
     const el = champs.current.get(f.id);
     if (!el) return;
     focusVoulu.current = null;
+    // Frappe rapide (Safari) : des lettres sont déjà dans la ligne ; replacer le curseur les mélangerait.
+    if (f.valeur !== undefined && el.value !== f.valeur && document.activeElement === el) return;
     el.focus({ preventScroll: false });
     const pos = f.pos === 'fin' ? el.value.length : Math.min(f.pos, el.value.length);
     el.setSelectionRange(pos, pos);
@@ -133,7 +136,7 @@ export function Nomenclature({
         const nouveau = l.noeud.enfants.length > 0 && !l.noeud.replie
           ? creerNoeud(doc, id, 0, { texte: apres })
           : creerApres(doc, id, { texte: apres, tache: l.noeud.tache });
-        focaliser({ id: nouveau, pos: 0 });
+        focaliser({ id: nouveau, pos: 0, valeur: apres });
       });
       return;
     }
