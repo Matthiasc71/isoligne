@@ -260,7 +260,6 @@ export function Nomenclature({
         <PremiereIdee onValider={premiereIdee} />
       ) : (
         <>
-        <Indice cle="nomenclature" texte="Balayez une ligne pour l’indenter. Appui long sur le numéro pour la déplacer." />
         <div
           ref={liste}
           role="tree"
@@ -284,6 +283,8 @@ export function Nomenclature({
           ))}
           {glisse !== null && glisse.avant === lignes.length && <div className="indicateur-depot" aria-hidden="true" />}
         </div>
+        {/* Sous la liste : son apparition ne décale aucune ligne. */}
+        <Indice cle="nomenclature" texte="Balayez une ligne pour l’indenter. Appui long sur le numéro pour la déplacer." />
         </>
       )}
       {faitesRacine > 0 && (

@@ -345,7 +345,13 @@
   text-decoration: none;
 }
 .graphe-indice:not(:empty) {
-  padding: 12px var(--marge) 0;
+  position: absolute;
+  left: var(--marge);
+  right: var(--marge);
+  bottom: calc(var(--barre-bas) + 72px);
+  z-index: 3;
+  padding: 0 10px;
+  background: var(--fond);
 }
 .graphe-indice .indice {
   margin: 0;

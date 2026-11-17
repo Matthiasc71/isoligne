@@ -124,11 +124,11 @@ export default function Calendrier() {
             onChoisir={setChoisi} onMois={decaler} onAujourdhui={() => setChoisi(aujourd)} />
           {![...parJour.keys()].some((j) => memeMois(j, choisi)) && <p className="t-cote cal-vide">Aucune échéance ce mois-ci</p>}
           <section className="cal-jour" aria-label={`Échéances du ${dateParlee(choisi)}`}>
-            {(parJour.get(choisi) ?? []).length > 0 && <Indice cle="calendrier" texte="Appui long sur une échéance pour la déplacer." />}
             <h2 className="t-label">{dateJour(choisi, maintenant)}</h2>
             {(parJour.get(choisi) ?? []).length === 0
               ? <p className="t-cote cal-rien">Rien ce jour-là</p>
               : <ul className="liste-simple">{(parJour.get(choisi) ?? []).map(ligneDe)}</ul>}
+            {(parJour.get(choisi) ?? []).length > 0 && <div className="cal-indice"><Indice cle="calendrier" texte="Appui long sur une échéance pour la déplacer." /></div>}
           </section>
         </>
       )}

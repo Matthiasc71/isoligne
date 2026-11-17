@@ -180,6 +180,11 @@
   margin: 0;
 }
 .planche-indice:not(:empty) {
-  position: relative;
-  padding: 0 var(--marge);
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 64px);
+  left: var(--marge);
+  right: var(--marge);
+  z-index: 2;
+  padding: 0 10px;
+  background: var(--fond);
 }
