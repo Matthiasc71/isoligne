@@ -8,7 +8,7 @@ const CMD = MAC ? '⌘' : 'Ctrl';
 export const GESTES: [string, string][] = [
   ['Balayer une ligne à droite · à gauche', 'Indenter · désindenter'],
   ['Toucher le numéro', 'Détails de la ligne'],
-  ['Appui long sur le numéro', 'Déplacer la ligne'],
+  ['Glisser le numéro vers le haut ou le bas', 'Déplacer la ligne'],
   ['Appui long sur un projet', 'Actions du projet'],
   ['Calendrier : appui long sur une échéance, puis glisser', 'La déplacer à un autre jour'],
   ['Calendrier : balayer la grille', 'Mois précédent · suivant'],

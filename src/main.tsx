@@ -46,6 +46,24 @@ if (import.meta.env.PROD) {
   void import('virtual:pwa-register').then(({ registerSW }) => registerSW({ immediate: true }));
 }
 
+// Écran d'ouverture : retiré dès que les projets sont prêts et l'animation jouée (≈ 0,95 s),
+// au plus tard à 1,5 s du lancement ; un toucher le passe. Il n'existe qu'au lancement à froid.
+const ouverture = document.getElementById('ouverture');
+if (ouverture) {
+  const reduit = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let fini = false;
+  const finir = () => {
+    if (fini) return;
+    fini = true;
+    ouverture.classList.add('fin');
+    setTimeout(() => ouverture.remove(), 300);
+  };
+  const a = (ms: number) => setTimeout(finir, Math.max(0, ms - performance.now()));
+  void stockage.espacePret.then(() => a(reduit ? 0 : 950));
+  a(1500);
+  ouverture.addEventListener('pointerdown', finir);
+}
+
 createRoot(document.getElementById('app')!).render(
   <StrictMode>
     <FournisseurStockage value={stockage}>

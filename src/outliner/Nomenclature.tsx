@@ -196,7 +196,7 @@ export function Nomenclature({
     if (e.key === 'Escape') el.blur();
   };
 
-  // ───────── Glisser pour déplacer (appui long sur le numéro) ─────────
+  // ───────── Glisser pour déplacer (numéro glissé vers le haut ou le bas, ou appui long) ─────────
   const terminerGlisse = useCallback((g: { id: string; avant: number } | null) => {
     if (!g) return;
     const cible = lignes[g.avant];
@@ -284,7 +284,7 @@ export function Nomenclature({
           {glisse !== null && glisse.avant === lignes.length && <div className="indicateur-depot" aria-hidden="true" />}
         </div>
         {/* Sous la liste : son apparition ne décale aucune ligne. */}
-        <Indice cle="nomenclature" texte="Balayez une ligne pour l’indenter. Appui long sur le numéro pour la déplacer." />
+        <Indice cle="nomenclature" texte="Balayez une ligne pour l’indenter. Glissez son numéro vers le haut ou le bas pour la déplacer." />
         </>
       )}
       {faitesRacine > 0 && (
@@ -416,17 +416,31 @@ const LigneNoeud = memo(function LigneNoeud({
     setDecalage(0);
   };
 
-  // Numéro : toucher = panneau du nœud ; appui long = déplacer.
+  // Numéro : toucher = panneau du nœud ; glisser vers le haut ou le bas (ou appui long) = déplacer.
+  const departNumero = useRef<{ x: number; y: number } | null>(null);
+  const lancerGlisse = () => {
+    if (appui.current) clearTimeout(appui.current);
+    departNumero.current = null;
+    appuiDeclenche.current = true;
+    navigator.vibrate?.(10);
+    signalerGeste('nomenclature');
+    ctrl.commencerGlisse(n.id);
+  };
   const numeroBas = (e: RPointerEvent) => {
     appuiDeclenche.current = false;
+    departNumero.current = { x: e.clientX, y: e.clientY };
     if (e.pointerType === 'mouse') return;
-    appui.current = setTimeout(() => {
-      appuiDeclenche.current = true;
-      navigator.vibrate?.(10);
-      ctrl.commencerGlisse(n.id);
-    }, 450);
+    appui.current = setTimeout(lancerGlisse, 450);
   };
-  const numeroFin = () => { if (appui.current) clearTimeout(appui.current); };
+  const numeroBouge = (e: RPointerEvent) => {
+    const d = departNumero.current;
+    if (!d || appuiDeclenche.current) return;
+    const dx = e.clientX - d.x;
+    const dy = e.clientY - d.y;
+    // Un glisser franchement vertical part tout de suite (le numéro ne fait pas défiler la page).
+    if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) * 1.5) lancerGlisse();
+  };
+  const numeroFin = () => { departNumero.current = null; if (appui.current) clearTimeout(appui.current); };
 
   const libelleNum = `${l.numero}${n.tache ? (n.fait ? ', tâche faite' : ', tâche') : ''}${n.echeance ? `, échéance ${dateParlee(n.echeance)}${retard ? ', en retard' : ''}` : ''}, détails`;
 
@@ -439,7 +453,7 @@ const LigneNoeud = memo(function LigneNoeud({
       aria-label={n.texte || 'Élément vide'}
       data-ligne
       className={`ligne-noeud${premierNiveau ? ' premier-niveau' : ''}${glissee ? ' glissee' : ''}${indicateur ? ' indicateur' : ''}${n.tache && n.fait ? ' faite' : ''}${nouvelle ? ' nouvelle' : ''}`}
-      style={{ ['--profondeur' as string]: Math.max(0, l.profondeur - 1), transform: decalage ? `translateX(${decalage}px)` : undefined }}
+      style={{ ['--profondeur' as string]: l.profondeur, transform: decalage ? `translateX(${decalage}px)` : undefined }}
       onPointerDown={surBas}
       onPointerMove={surDeplacement}
       onPointerUp={surHaut}
@@ -453,6 +467,7 @@ const LigneNoeud = memo(function LigneNoeud({
         className="ligne-num t-cote"
         aria-label={libelleNum}
         onPointerDown={numeroBas}
+        onPointerMove={numeroBouge}
         onPointerUp={numeroFin}
         onPointerLeave={numeroFin}
         onPointerCancel={numeroFin}

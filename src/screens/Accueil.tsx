@@ -16,6 +16,7 @@ import {
 import { BoutonIcone, Choix, Feuille, Segments } from '../ui/ui';
 import { useAppuiLong } from '../ui/gestes';
 import { problemeDurable, useEtatSynchro } from '../sync/contexte';
+import { Isolignes } from '../design/Isolignes';
 import './accueil.css';
 
 type Tri = 'echeance' | 'recent' | 'nom';
@@ -85,6 +86,13 @@ export function Accueil({ archives = false, compact = false }: { archives?: bool
           {temoin && <span className="temoin-synchro" aria-hidden="true" />}
         </BoutonIcone>
       </header>
+
+      {!archives && (
+        <div className="accueil-marque" aria-hidden="true">
+          <span className="t-titre accueil-nom">Isoligne</span>
+          <Isolignes />
+        </div>
+      )}
 
       {prochaine && (
         <a

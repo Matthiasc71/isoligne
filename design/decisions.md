@@ -116,3 +116,10 @@ Requête : « outil de projets personnel, style blueprint/cyanotype, très épur
 - Écarté : le focus voulu, appliqué en retard (garde-fou ajouté) ; le champ contrôlé par le seul Yjs (valeur locale ajoutée) ; le décalage dû aux indices (déplacés).
 - Expérience en CI : avec 30 ms entre les touches (un pouce rapide en met 100 ou plus), le test échoue encore parfois au premier essai et passe au second. Cause non identifiée. Le test tape à 30 ms, et la CI accepte une seconde tentative pour les e2e.
 - **À vérifier sur iPhone réel** : taper vite juste après « Retour ».
+
+## Ouverture, titre, retrait, glisser (17.11.2026)
+- Ouverture « Construction » dans `index.html` (style en ligne : la CSP autorise les styles en ligne, pas les scripts). Retrait piloté par `main.tsx` : projets prêts + animation jouée, plafond 1,5 s, toucher pour passer.
+- Thème mémorisé aussi dans `localStorage` et posé par un petit script externe (`theme-initial.js`) : la CSP interdit les scripts en ligne.
+- Courbes de niveau du titre : chemins périodiques dessinés sur deux périodes et glissés d'une période (transform CSS), pour une boucle sans couture et sans calcul par image.
+- Retrait : `padding-left` de la ligne = min(profondeur, 5) × 20 px.
+- Glisser : départ dès 10 px de mouvement franchement vertical sur le numéro.

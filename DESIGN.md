@@ -268,6 +268,11 @@ Implémentés dans `src/design/signature.tsx` (signature), `src/ui/ui.tsx` (prim
 - Cases de rappel (44 px, cochées pleines) : J-7, J-1, Jour J 9 h, 1 h avant (avec une heure), puis un champ « Rappel personnalisé ».
 - Réglages, section Notifications : état en une ligne de cote, action principale en choix (« Activer les notifications », « Envoyer un essai »), rappels par défaut, résumé quotidien.
 
+### Ouverture, titre de l'accueil
+- Ouverture : cercle de construction en pointillé (trait-2), deux axes, logo au trait, point redline au centre. Fond = fond du thème. ≈ 0,95 s, 1,5 s au plus.
+- Accueil : « ISOLIGNE » en titre sous la date, puis deux courbes de niveau de 1 px (trait plein et trait-2 en tirets) qui glissent lentement, avec un carré redline de 5 px sur la première.
+- Nomenclature : chaque niveau décale toute la ligne de 20 px (5 niveaux au plus).
+
 ### Recherche, palette, aide
 - Recherche : champ unique, puces de filtre (44 px, pleines quand cochées), décompte en cote. Groupes par projet (carré calque + titre en label), résultats en deux lignes : repère en cote (« 1.2 · ven. 20.11 »), extrait en body. Les mots trouvés sont **en gras et soulignés**, jamais surlignés en couleur.
 - Palette (Cmd/Ctrl+K) : champ, puis commandes groupées en label ; la commande active est encadrée d'un trait de 1 px.

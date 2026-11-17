@@ -1,0 +1,39 @@
+/* Titre de l'accueil : deux courbes de niveau qui glissent lentement (0,04 Hz). */
+.isolignes {
+  display: block;
+  width: 100%;
+  height: 28px;
+  overflow: hidden;
+}
+.isolignes path {
+  fill: none;
+  stroke: var(--trait);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.isolignes .iso-b path {
+  stroke: var(--trait-2);
+  stroke-dasharray: 2 3;
+}
+.iso-point {
+  fill: var(--redline);
+}
+.iso-a {
+  animation: iso-glisse 26s linear infinite;
+}
+.iso-b {
+  animation: iso-glisse-retour 38s linear infinite;
+}
+@keyframes iso-glisse {
+  to { transform: translateX(-320px); }
+}
+@keyframes iso-glisse-retour {
+  from { transform: translateX(-320px); }
+  to { transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .iso-a,
+  .iso-b {
+    animation: none;
+  }
+}

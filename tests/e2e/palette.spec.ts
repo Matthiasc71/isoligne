@@ -45,7 +45,7 @@ test('palette Cmd+K : faute légère, clavier, modèle de départ, aide', async 
   await page.keyboard.press('Enter');
   const aide = page.getByRole('dialog', { name: 'Gestes et raccourcis' });
   await expect(aide).toContainText('Palette de commandes');
-  await expect(aide).toContainText('Appui long sur le numéro');
+  await expect(aide).toContainText('Glisser le numéro vers le haut ou le bas');
 });
 
 test('indice au premier usage (écran tactile) : une fois, puis plus jamais', async ({ page }, info) => {

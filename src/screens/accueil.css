@@ -103,3 +103,14 @@
 .accueil-vide {
   padding: 20px 0;
 }
+
+/* Titre de l'app et ses courbes de niveau (brief : design/briefs/ouverture.md) */
+.accueil-marque {
+  display: grid;
+  gap: 6px;
+  margin: -14px 0 28px;
+}
+.accueil-nom {
+  display: block;
+  line-height: 1;
+}
