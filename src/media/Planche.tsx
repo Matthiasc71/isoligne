@@ -1,3 +1,4 @@
+import { Indice, signalerGeste } from '../ui/Indice';
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from 'react';
 import * as Y from 'yjs';
 import { useVersion } from '../app/contexte';
@@ -68,7 +69,7 @@ export function Planche({
 
   const bas = (e: RPointerEvent<SVGSVGElement>) => {
     pointeurs.current.add(e.pointerId);
-    if (pointeurs.current.size > 1) { setEnCours(null); return; } // deux doigts : pas de dessin
+    if (pointeurs.current.size > 1) { setEnCours(null); signalerGeste('planche'); return; } // deux doigts : pas de dessin
     e.currentTarget.setPointerCapture(e.pointerId);
     annuler.stopCapturing();
     if (outil === 'gomme') { const p = point(e); gommer(doc, idBloc, p.x, p.y); return; }
@@ -107,6 +108,7 @@ export function Planche({
         </span>
       </div>
 
+      <div className="planche-indice"><Indice cle="planche" texte="Deux doigts pour défiler." /></div>
       <div className="planche-zone">
         <svg
           ref={toile}

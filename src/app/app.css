@@ -80,3 +80,11 @@
 .raccourci dd {
   margin: 0;
 }
+
+/* Page « Gestes et raccourcis » */
+.aide-section + .aide-section {
+  margin-top: 28px;
+}
+.aide-section h3 {
+  margin-bottom: 10px;
+}

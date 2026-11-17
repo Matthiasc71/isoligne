@@ -1,3 +1,4 @@
+import { Indice, signalerGeste } from '../ui/Indice';
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as RKeyboardEvent } from 'react';
 import {
   ReactFlow, ReactFlowProvider, ViewportPortal, applyNodeChanges, useReactFlow,
@@ -280,6 +281,7 @@ function Toile({
       etape(() => definirEcheance(doc, n.id, dateDepuisX(n.position.x, plan.axe!, origine)));
       setApercuDate(null);
     } else if (cible) {
+      signalerGeste('graphe');
       const parent = cible === RACINE ? RACINE : cible;
       etape(() => deplacer(doc, n.id, parent, arbre.enfants.get(parent)?.length ?? 0));
       setCible(null);
@@ -397,6 +399,8 @@ function Toile({
             </button>
           ))}
         </div>
+
+        <div className="graphe-indice"><Indice cle="graphe" texte="Glissez un nœud sur un autre pour le rattacher." /></div>
 
         <div className="toile" ref={conteneur} tabIndex={0} onKeyDown={surTouche} aria-label={resume} role="application" aria-roledescription="graphe">
           <ReactFlow<NoeudGraphe>

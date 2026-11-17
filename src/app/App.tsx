@@ -1,3 +1,4 @@
+import { SuiviGestes } from '../ui/Indice';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Grille } from '../design/signature';
 import { IcCalendrier, IcPlus, IcProjets, IcRecherche } from '../design/icones';
@@ -8,6 +9,7 @@ import { AjoutRapide, type Mode } from '../screens/AjoutRapide';
 import { DemandeNotifications } from '../screens/Notifications';
 import { normaliserUrl } from '../media/lien';
 import { Raccourcis } from './Raccourcis';
+import { Palette } from './Palette';
 import './app.css';
 
 const Projet = lazy(() => import('../screens/Projet'));
@@ -76,10 +78,11 @@ export function App() {
     return () => window.removeEventListener('paste', f);
   }, []);
 
-  // Raccourci global : Cmd/Ctrl+K ouvre l'ajout rapide (la palette complète arrive au jalon 6).
+  // Raccourci global : Cmd/Ctrl+K ouvre la palette de commandes.
+  const [palette, setPalette] = useState(false);
   useEffect(() => {
     const f = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setAjout(true); }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setPalette((o) => !o); }
     };
     window.addEventListener('keydown', f);
     return () => window.removeEventListener('keydown', f);
@@ -125,8 +128,11 @@ export function App() {
       </main>
       {!large && barreVisible && <Navigation route={route} onAjouter={() => setAjout(true)} verticale={false} />}
       <AjoutRapide ouverte={ajout} demande={demandeAjout} onFermer={() => { setAjout(false); setDemandeAjout(null); }} />
+      <Palette ouverte={palette} onFermer={() => setPalette(false)}
+        onAjouter={(mode) => { setDemandeAjout({ mode }); setAjout(true); }} />
       <Raccourcis />
       <DemandeNotifications />
+      <SuiviGestes />
     </div>
   );
 }

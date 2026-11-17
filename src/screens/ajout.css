@@ -44,3 +44,9 @@
   color: var(--trait-2);
   border-color: var(--trait-2);
 }
+
+.champ-modele {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

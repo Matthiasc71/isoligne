@@ -2,10 +2,9 @@ import MiniSearch, { type SearchResult } from 'minisearch';
 import { enRetard } from '../time/dates';
 import type { Nature, TexteCherchable } from './textes';
 
-/** Insensible aux accents et à la casse. */
-export function normaliser(s: string): string {
-  return s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
-}
+import { normaliser } from './normaliser';
+
+export { normaliser };
 
 export type Filtre = 'texte' | 'taches' | 'croquis' | 'liens' | 'retard';
 

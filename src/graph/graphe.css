@@ -344,3 +344,9 @@
   color: var(--trait-2);
   text-decoration: none;
 }
+.graphe-indice:not(:empty) {
+  padding: 12px var(--marge) 0;
+}
+.graphe-indice .indice {
+  margin: 0;
+}

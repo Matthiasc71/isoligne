@@ -179,3 +179,7 @@
   grid-column: 1 / -1;
   margin: 0;
 }
+.planche-indice:not(:empty) {
+  position: relative;
+  padding: 0 var(--marge);
+}

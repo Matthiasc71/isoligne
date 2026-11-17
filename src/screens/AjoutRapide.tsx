@@ -11,6 +11,7 @@ import { creerBloc } from '../data/projet';
 import { poserUrl } from '../media/lien';
 import { SaisieLien } from '../media/BlocLien';
 import { Choix, Feuille, Segments } from '../ui/ui';
+import { MODELES, projetDepuisModele, type CleModele } from '../echange/modeles';
 import './ajout.css';
 
 export type Mode = 'menu' | 'projet' | 'idee' | 'lien';
@@ -58,13 +59,16 @@ function FormProjet({ couleursPrises, onFini }: { couleursPrises: CleCouleur[]; 
   const [titre, setTitre] = useState('');
   const [type, setType] = useState<TypeProjet>('creatif');
   const [couleur, setCouleur] = useState<CleCouleur>(libre);
+  const [modele, setModele] = useState<CleModele>('aucun');
   const [envoi, setEnvoi] = useState(false);
 
   const valider = async (e: FormEvent) => {
     e.preventDefault();
     if (!titre.trim() || envoi) return;
     setEnvoi(true);
-    const id = await stockage.creerProjet({ titre: titre.trim(), type, couleur });
+    const id = modele === 'aucun'
+      ? await stockage.creerProjet({ titre: titre.trim(), type, couleur })
+      : await (await import('../echange/fichiers')).creerDepuis(stockage, projetDepuisModele(modele, titre.trim(), type, couleur));
     onFini();
     aller({ ecran: 'projet', id, branche: null, vue: 'page' });
   };
@@ -82,6 +86,18 @@ function FormProjet({ couleursPrises, onFini }: { couleursPrises: CleCouleur[]; 
         autoComplete="off"
         enterKeyHint="done"
       />
+      <label className="champ-modele">
+        <span className="t-cote">Modèle</span>
+        <select className="champ t-corps" value={modele} onChange={(e) => {
+          const m = e.target.value as CleModele;
+          setModele(m);
+          const t = MODELES.find((x) => x.cle === m)?.type;
+          if (t) setType(t);
+        }}>
+          <option value="aucun">Aucun</option>
+          {MODELES.map((m) => <option key={m.cle} value={m.cle}>{m.libelle}</option>)}
+        </select>
+      </label>
       <Segments
         libelle="Type"
         valeur={type}

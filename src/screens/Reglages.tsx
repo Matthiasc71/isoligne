@@ -4,7 +4,8 @@ import { useStockage } from '../app/contexte';
 import { aller } from '../app/route';
 import { appliquerTheme, type Theme } from '../app/theme';
 import { IcRetour } from '../design/icones';
-import { BoutonIcone, Segments } from '../ui/ui';
+import { BoutonIcone, Choix, Segments } from '../ui/ui';
+import { EVENEMENT_AIDE } from '../app/Palette';
 import { SectionSynchro } from './Synchro';
 import { SectionNotifications } from './Notifications';
 import { SectionDonnees } from './Donnees';
@@ -68,6 +69,11 @@ export default function Reglages() {
           {usage ?? '—'} · {protege === null ? '—' : protege ? 'protégées contre l’effacement automatique' : 'non protégées : installez l’app sur l’écran d’accueil'}
         </p>
         <SectionDonnees />
+      </section>
+
+      <section className="reglage" aria-labelledby="r-aide">
+        <h2 id="r-aide" className="t-label">Aide</h2>
+        <Choix onClick={() => window.dispatchEvent(new Event(EVENEMENT_AIDE))}>Gestes et raccourcis</Choix>
       </section>
 
       <section className="reglage" aria-labelledby="r-apropos">

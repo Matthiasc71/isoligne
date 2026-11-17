@@ -1,3 +1,4 @@
+import { Indice, signalerGeste } from '../ui/Indice';
 import {
   memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState,
   type KeyboardEvent as RKeyboardEvent, type PointerEvent as RPointerEvent,
@@ -255,6 +256,8 @@ export function Nomenclature({
       {lignes.length === 0 ? (
         <PremiereIdee onValider={premiereIdee} />
       ) : (
+        <>
+        <Indice cle="nomenclature" texte="Balayez une ligne pour l’indenter. Appui long sur le numéro pour la déplacer." />
         <div
           ref={liste}
           role="tree"
@@ -278,6 +281,7 @@ export function Nomenclature({
           ))}
           {glisse !== null && glisse.avant === lignes.length && <div className="indicateur-depot" aria-hidden="true" />}
         </div>
+        </>
       )}
       {faitesRacine > 0 && (
         <button type="button" className="faites-racine t-cote" onClick={() => basculerFaites(racine)} aria-expanded={faitesOuvertes.has(racine)}>
@@ -392,6 +396,7 @@ const LigneNoeud = memo(function LigneNoeud({
     const b = balayage.current;
     balayage.current = null;
     if (b?.actif) {
+      if (Math.abs(decalage) > 40) signalerGeste('nomenclature');
       if (decalage > 40) indenter(doc, n.id);
       else if (decalage < -40 && n.parent !== racine) desindenter(doc, n.id);
     }

@@ -134,7 +134,7 @@ test('appairage par code, synchro dans les deux sens, révocation, restauration'
   // ── Troisième appareil : restauration par la clé de secours.
   const neuf = await (await browser.newContext({ ...ordinateur, reducedMotion: 'reduce' })).newPage();
   await reglages(neuf);
-  await neuf.getByRole('button', { name: /Restaurer/ }).click();
+  await neuf.getByRole('button', { name: 'Restaurer avec la clé de secours' }).click();
   await neuf.getByLabel('Clé de secours').fill(groupes.join(' ').toLowerCase());
   await neuf.getByRole('button', { name: 'Restaurer', exact: true }).click();
   await expect(neuf.getByRole('status').filter({ hasText: /À jour/ })).toBeVisible({ timeout: 15_000 });

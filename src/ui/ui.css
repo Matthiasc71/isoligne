@@ -261,3 +261,14 @@
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
+
+/* Indice au premier usage : une ligne de cote, un trait au-dessus. */
+.indice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--trait-2);
+}

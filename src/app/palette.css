@@ -1,0 +1,29 @@
+/* Palette de commandes (Cmd/Ctrl+K) */
+.palette-champ {
+  width: 100%;
+  margin-bottom: 12px;
+}
+.palette-liste {
+  max-height: min(56dvh, 520px);
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.palette-groupe {
+  display: block;
+  padding: 16px 0 6px;
+}
+.palette-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: var(--cible);
+  padding: 0 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.palette-option.actif {
+  border-color: var(--trait);
+}

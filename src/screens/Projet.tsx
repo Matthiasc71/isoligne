@@ -27,6 +27,7 @@ import type { Bloc } from '../data/projet';
 import type { Disposition } from '../graph/liens';
 import { exporterProjet } from '../echange/fichiers';
 import { FeuillePartage } from '../partage/FeuillePartage';
+import { EVENEMENT_PARTAGER } from '../app/Palette';
 import './projet.css';
 
 const Graphe = lazy(() => import('../graph/Graphe').then((m) => ({ default: m.Graphe })));
@@ -100,6 +101,13 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
       });
     }
   }, [route.noeud, route.bloc, route.id, arbre]);
+
+  // Palette de commandes : « Partager en lecture seule ».
+  useEffect(() => {
+    const f = () => setPartage(true);
+    window.addEventListener(EVENEMENT_PARTAGER, f);
+    return () => window.removeEventListener(EVENEMENT_PARTAGER, f);
+  }, []);
 
   // Cmd/Ctrl+Z hors des champs : annuler.
   useEffect(() => {

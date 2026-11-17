@@ -1,3 +1,4 @@
+import { Indice, signalerGeste } from '../ui/Indice';
 import {
   useCallback, useEffect, useMemo, useRef, useState,
   type KeyboardEvent as RKeyboardEvent, type MouseEvent as RMouseEvent, type PointerEvent as RPointerEvent, type ReactNode,
@@ -74,7 +75,7 @@ export default function Calendrier() {
     setAvis({ texte: `Déplacée au ${dateJour(nouvelle, maintenant)}`, annuler: () => void poser(ancienne) });
   }, [stockage, maintenant]);
 
-  const glisser = useGlisser((l, jour) => void deplacer(l, jour));
+  const glisser = useGlisser((l, jour) => { signalerGeste('calendrier'); void deplacer(l, jour); });
 
   const changerVue = (v: VueCal) => void stockage.poserReglage('vueCalendrier', v);
   const decaler = (sens: -1 | 1) => {
@@ -123,6 +124,7 @@ export default function Calendrier() {
             onChoisir={setChoisi} onMois={decaler} onAujourdhui={() => setChoisi(aujourd)} />
           {![...parJour.keys()].some((j) => memeMois(j, choisi)) && <p className="t-cote cal-vide">Aucune échéance ce mois-ci</p>}
           <section className="cal-jour" aria-label={`Échéances du ${dateParlee(choisi)}`}>
+            {(parJour.get(choisi) ?? []).length > 0 && <Indice cle="calendrier" texte="Appui long sur une échéance pour la déplacer." />}
             <h2 className="t-label">{dateJour(choisi, maintenant)}</h2>
             {(parJour.get(choisi) ?? []).length === 0
               ? <p className="t-cote cal-rien">Rien ce jour-là</p>
