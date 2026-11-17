@@ -1,0 +1,71 @@
+name: Mettre en ligne l'app
+
+# Publie l'app sur GitHub Pages après chaque CI verte sur main (ou à la main).
+# Prérequis, une fois : Settings → Pages → Build and deployment → Source : « GitHub Actions ».
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  DO_NOT_TRACK: '1'
+  # Adresse publique du Worker (pas un secret) : CSP et appels de l'app.
+  VITE_WORKER_URL: https://isoligne-api.matthias-cordier71.workers.dev
+
+jobs:
+  construire:
+    # Seulement un commit dont la CI est verte.
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build (adresse du Worker dans la CSP)
+        run: npm run build
+      - name: La CSP autorise le Worker, et lui seul
+        run: grep -q "connect-src 'self' ${VITE_WORKER_URL};" dist/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  publier:
+    needs: construire
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deploiement.outputs.page_url }}
+    steps:
+      - id: deploiement
+        uses: actions/deploy-pages@v4
+      - name: Vérification en ligne
+        env:
+          URL: ${{ steps.deploiement.outputs.page_url }}
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS "$URL" | grep -q '<title>Isoligne</title>'; then break; fi
+            sleep 10
+          done
+          curl -fsS "$URL" | grep -q '<title>Isoligne</title>' || { echo "::error::$URL ne répond pas"; exit 1; }
+          curl -fsS "${URL}manifest.webmanifest" | grep -q '"name":"Isoligne"' || { echo "::error::manifeste absent"; exit 1; }
+          curl -fsS "${URL}sw.js" > /dev/null || { echo "::error::service worker absent"; exit 1; }
+          echo "### App en ligne : $URL" >> "$GITHUB_STEP_SUMMARY"

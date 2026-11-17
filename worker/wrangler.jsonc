@@ -6,7 +6,8 @@
   "compatibility_date": "2026-11-01",
   "workers_dev": true,
   "vars": {
-    "ORIGINES": "https://matthiasc71.github.io,http://localhost:5173,http://localhost:4173",
+    // Production : l'app en ligne seulement. En local, les scripts passent --var ORIGINES:http://localhost:…
+    "ORIGINES": "https://matthiasc71.github.io",
     // Instance personnelle : un seul espace (le vôtre). Les tests locaux relèvent ce plafond.
     "ESPACES_MAX": "1"
   },
