@@ -114,5 +114,5 @@ Requête : « outil de projets personnel, style blueprint/cyanotype, très épur
 ## Frappe juste après Entrée sous WebKit automatisé (17.11.2026)
 - En CI, sous WebKit, la première lettre tapée juste après Entrée finit parfois en fin de ligne (« ournageT »). Ce n'est pas systématique.
 - Écarté : le focus voulu, appliqué en retard (garde-fou ajouté) ; le champ contrôlé par le seul Yjs (valeur locale ajoutée) ; le décalage dû aux indices (déplacés).
-- Expérience en CI : avec 30 ms entre les touches (un pouce rapide en met 100 ou plus), le test passe. C'est une course propre à la frappe instantanée de l'automate. Le test tape donc à 30 ms, et la CI accepte une seconde tentative pour les e2e.
+- Expérience en CI : avec 30 ms entre les touches (un pouce rapide en met 100 ou plus), le test échoue encore parfois au premier essai et passe au second. Cause non identifiée. Le test tape à 30 ms, et la CI accepte une seconde tentative pour les e2e.
 - **À vérifier sur iPhone réel** : taper vite juste après « Retour ».
