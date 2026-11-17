@@ -27,7 +27,8 @@ export interface TexteCherchable {
 export function texteRiche(f: Y.XmlFragment | Y.XmlElement): string {
   const parts: string[] = [];
   const parcourir = (n: Y.XmlFragment | Y.XmlElement | Y.XmlText) => {
-    if (n instanceof Y.XmlText) { parts.push(n.toString().replace(/<[^>]+>/g, '')); return; }
+    // Les morceaux du texte, sans passer par la sérialisation XML (un « < » saisi resterait ambigu).
+    if (n instanceof Y.XmlText) { for (const d of n.toDelta() as { insert: unknown }[]) if (typeof d.insert === 'string') parts.push(d.insert); return; }
     const avant = parts.length;
     for (const e of n.toArray()) parcourir(e as Y.XmlElement | Y.XmlText);
     if (n instanceof Y.XmlElement && parts.length > avant) parts.push('\n');
