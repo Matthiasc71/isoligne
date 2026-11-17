@@ -269,3 +269,10 @@ isoligne/
   - aperçu avant import ;
   - essai sur iPhone réel de la feuille de partage du système et des indices (jalon 7).
 
+### Jalon 7 : mise en ligne (17.11.2026)
+- App en ligne : **https://matthiasc71.github.io/isoligne/** (GitHub Pages, publiée après chaque CI verte sur `main` par `pages.yml`, puis vérifiée en ligne).
+- Worker : `https://isoligne-api.matthias-cordier71.workers.dev`, déployé par `deployer-worker.yml` (lancé à la main). En production, seule l'origine de l'app est acceptée (redéploiement à faire).
+- README (installer, notifications, appairer, sauvegarder, restaurer, révoquer, partager, quotas, dépannage) et licence MIT.
+- Corrigé : indices qui décalaient la liste ou la toile à leur apparition ; Cmd+K qui pouvait refermer la palette.
+- Reste à vérifier sur appareil réel : VoiceOver, stylet, feuille de partage d'iOS, notifications et pastille, frappe rapide juste après « Retour » (voir design/decisions.md).
+
