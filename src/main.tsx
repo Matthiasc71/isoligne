@@ -43,7 +43,15 @@ if (import.meta.env.DEV || import.meta.env.VITE_DEMO === '1') {
 }
 
 if (import.meta.env.PROD) {
-  void import('virtual:pwa-register').then(({ registerSW }) => registerSW({ immediate: true }));
+  // Mise à jour : l'app installée sur iPhone revient souvent de l'arrière-plan sans être rechargée ;
+  // on demande alors au service worker de chercher une nouvelle version (elle s'applique toute seule).
+  void import('virtual:pwa-register').then(({ registerSW }) => registerSW({
+    immediate: true,
+    onRegisteredSW(_url, reg) {
+      if (!reg) return;
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void reg.update().catch(() => undefined); });
+    },
+  }));
 }
 
 // Écran d'ouverture : retiré dès que les projets sont prêts et l'animation jouée (≈ 0,95 s),

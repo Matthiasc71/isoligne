@@ -51,3 +51,13 @@ test('glisser le numéro vers le bas, à la souris', async ({ page }, info) => {
   await page.mouse.up();
   await expect.poll(() => ordre(page)).toEqual(['Deux', 'Trois', 'Un']);
 });
+
+test('un sous-point est décalé, numéro compris (2.1 sous 2)', async ({ page }) => {
+  const arbre = await troisLignes(page);
+  await arbre.getByLabel(/^3 Trois/).focus();
+  await page.keyboard.press('Tab');
+  const deux = (await arbre.getByRole('button', { name: /^2(,|$)/ }).boundingBox())!;
+  const sous = (await arbre.getByRole('button', { name: /^2\.1(,|$)/ }).boundingBox())!;
+  expect(sous.x - deux.x).toBeGreaterThanOrEqual(18);
+  expect(sous.x - deux.x).toBeLessThanOrEqual(22);
+});

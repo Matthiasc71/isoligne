@@ -78,7 +78,7 @@ export default function Reglages() {
 
       <section className="reglage" aria-labelledby="r-apropos">
         <h2 id="r-apropos" className="t-label">À propos</h2>
-        <p className="t-cote">Isoligne {__VERSION__} · code libre (MIT) · données chiffrées sur l’appareil avant tout envoi</p>
+        <p className="t-cote">Isoligne {__VERSION__} du {__CONSTRUIT__} · code libre (MIT) · données chiffrées sur l’appareil avant tout envoi</p>
         <ul className="licences t-cote">
           {LICENCES.map((l) => <li key={l}>{l}</li>)}
         </ul>

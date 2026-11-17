@@ -453,7 +453,8 @@ const LigneNoeud = memo(function LigneNoeud({
       aria-label={n.texte || 'Élément vide'}
       data-ligne
       className={`ligne-noeud${premierNiveau ? ' premier-niveau' : ''}${glissee ? ' glissee' : ''}${indicateur ? ' indicateur' : ''}${n.tache && n.fait ? ' faite' : ''}${nouvelle ? ' nouvelle' : ''}`}
-      style={{ ['--profondeur' as string]: l.profondeur, transform: decalage ? `translateX(${decalage}px)` : undefined }}
+      // Retrait calculé ici (20 px par niveau, 5 niveaux au plus) : pas de dépendance à min() dans calc().
+      style={{ paddingLeft: Math.min(l.profondeur, 5) * 20, transform: decalage ? `translateX(${decalage}px)` : undefined }}
       onPointerDown={surBas}
       onPointerMove={surDeplacement}
       onPointerUp={surHaut}

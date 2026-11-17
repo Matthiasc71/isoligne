@@ -35,7 +35,11 @@ function csp(): Plugin {
 
 export default defineConfig({
   base: '/isoligne/',
-  define: { __VERSION__: JSON.stringify(process.env.npm_package_version ?? '0.1.0') },
+  define: {
+    __VERSION__: JSON.stringify(process.env.npm_package_version ?? '0.1.0'),
+    // Date de construction (Paris) : affichée dans les Réglages pour savoir quelle version tourne.
+    __CONSTRUIT__: JSON.stringify(new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date()).replace('/', '.').replace(' ', ' · ')),
+  },
   plugins: [
     react(),
     csp(),
