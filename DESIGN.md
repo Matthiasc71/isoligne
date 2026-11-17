@@ -268,6 +268,15 @@ Implémentés dans `src/design/signature.tsx` (signature), `src/ui/ui.tsx` (prim
 - Cases de rappel (44 px, cochées pleines) : J-7, J-1, Jour J 9 h, 1 h avant (avec une heure), puis un champ « Rappel personnalisé ».
 - Réglages, section Notifications : état en une ligne de cote, action principale en choix (« Activer les notifications », « Envoyer un essai »), rappels par défaut, résumé quotidien.
 
+### Recherche, palette, aide
+- Recherche : champ unique, puces de filtre (44 px, pleines quand cochées), décompte en cote. Groupes par projet (carré calque + titre en label), résultats en deux lignes : repère en cote (« 1.2 · ven. 20.11 »), extrait en body. Les mots trouvés sont **en gras et soulignés**, jamais surlignés en couleur.
+- Palette (Cmd/Ctrl+K) : champ, puis commandes groupées en label ; la commande active est encadrée d'un trait de 1 px.
+- Indice au premier usage : une ligne de cote sous un trait en tirets, avec « Compris » en label.
+
+### Partage (vue du destinataire)
+- En tête, en cote : « Instantané du … · lecture seule ». Titre, puis cartouche en `dl` à traits pleins (Type, Calque, Échéance finale). Onglets Page · Graphe.
+- Arborescence figée : numéro en cote, case dessinée (pas de glyphe), texte en body, note en trait-2 sous la ligne.
+
 ### Synchro (Réglages)
 - **État** : une ligne en cote (« À jour · il y a 2 min ») ; redline seulement si révoqué ou en erreur.
 - **Appareils** : lignes body + cote (« cet appareil », « vu le… »), « Révoquer » en label redline, confirmé dans une feuille.

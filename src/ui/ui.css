@@ -272,3 +272,7 @@
   padding-top: 8px;
   border-top: 1px dashed var(--trait-2);
 }
+/* Titre masqué (palette) : la croix reste à droite. */
+.feuille-tete > .bouton-icone {
+  margin-left: auto;
+}

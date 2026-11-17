@@ -255,3 +255,17 @@ isoligne/
   - essai sur iPhone réel des notifications et de la pastille (jalon 7) ;
   - mesure du CPU du Cron en ligne.
 
+### Jalon 6 : bonus (livré le 17.11.2026)
+- Fait :
+  - recherche plein texte locale (MiniSearch) avec filtres et extraits ;
+  - export Markdown et OPML, import ;
+  - sauvegarde zip et restauration par fusion, rappel de sauvegarde ;
+  - partage en lecture seule chiffré (clé dans le fragment), révocable ;
+  - modèles de départ ;
+  - palette Cmd+K ;
+  - page « Gestes et raccourcis » et indices au premier usage.
+- Rapport : `design/rapports/jalon-6/rapport.md` (critique 34/40, audit 18/20, 0 anti-pattern, 0 violation axe).
+- Reporté :
+  - aperçu avant import ;
+  - essai sur iPhone réel de la feuille de partage du système et des indices (jalon 7).
+

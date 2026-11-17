@@ -15,7 +15,7 @@ import './secondaires.css';
 const LICENCES = [
   'React (MIT)', 'Yjs, y-indexeddb (MIT)', 'Dexie (Apache 2.0)', 'TipTap, ProseMirror (MIT)',
   'fractional-indexing (CC0)', 'date-fns (MIT)', 'Workbox (MIT)',
-  'MiniSearch, fflate (MIT)', 'Archivo, B612, B612 Mono (SIL OFL 1.1)',
+  'React Flow (MIT)', 'd3-hierarchy, d3-force (ISC)', 'perfect-freehand (MIT)', 'MiniSearch, fflate (MIT)', 'Archivo, B612, B612 Mono (SIL OFL 1.1)',
 ];
 
 export default function Reglages() {

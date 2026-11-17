@@ -96,3 +96,17 @@ Requête : « outil de projets personnel, style blueprint/cyanotype, très épur
 ## Rappels : défauts et horaires (16.11.2026)
 - J-7 et J-1 à 9 h, jour J à 9 h, sauté si l'échéance est plus tôt ce jour-là. « 1 h avant » seulement avec une heure.
 - Les défauts sont écrits sur l'échéance à sa première date. Les changer dans les Réglages ne touche pas les échéances existantes.
+
+## Partage en lecture seule : la clé dans le fragment (17.11.2026)
+- La spec prévoyait une page `/s/<jeton>` servie par le Worker. Le serveur ne pouvant rien lire (E2E), c'est l'app qui affiche l'instantané, à l'adresse `…/isoligne/#/s/<id>/<clé>`. Les navigateurs n'envoient jamais le fragment : ni GitHub Pages ni Cloudflare ne voient la clé.
+- L'instantané est le projet sous sa forme d'échange (JSON), compressé (fflate) puis chiffré (AES-256-GCM). Le graphe est redessiné chez le destinataire.
+- Les partages actifs (identifiant, clé, projet, dates) sont rangés dans l'espace chiffré : chaque appareil peut les mettre à jour ou les révoquer.
+
+## Échange : Markdown, OPML, sauvegarde (17.11.2026)
+- Une forme d'échange unique (`ProjetEch`) sert au Markdown, à l'OPML, aux modèles de départ et au partage.
+- Markdown : ce qui n'a pas d'équivalent (type, rappels, tracés, liens libres) va dans des commentaires HTML. Les liens libres désignent les nœuds par leur numéro (« 1.2 »), puisque les identifiants changent à l'import. L'italique s'écrit `_`.
+- Sauvegarde : états Yjs exacts + copie lisible. La restauration fusionne : la sauvegarde fait foi pour ses projets, même supprimés depuis.
+- Noms de fichiers translittérés en ASCII : Chromium ignore un nom accentué pour un téléchargement de blob.
+
+## Recherche (17.11.2026)
+- Textes cherchables extraits à chaque indexation dans une table Dexie (`textes`). MiniSearch construit l'index à l'ouverture de l'écran, sans ouvrir les projets. Une faute tolérée à partir de 4 lettres. Tous les mots sont requis.
