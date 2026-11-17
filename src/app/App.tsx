@@ -82,7 +82,7 @@ export function App() {
   const [palette, setPalette] = useState(false);
   useEffect(() => {
     const f = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setPalette((o) => !o); }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setPalette(true); }
     };
     window.addEventListener('keydown', f);
     return () => window.removeEventListener('keydown', f);

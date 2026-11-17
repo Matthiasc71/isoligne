@@ -21,6 +21,7 @@ test('palette Cmd+K : faute légère, clavier, modèle de départ, aide', async 
   await expect(page.getByRole('option')).toHaveText(['Calendrier']);
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/#\/calendrier/);
+  await expect(page.getByRole('dialog', { name: 'Commandes' })).toHaveCount(0);
 
   // Nouveau projet depuis la palette, avec un modèle : le type suit le modèle.
   await page.keyboard.press('ControlOrMeta+k');
@@ -35,6 +36,7 @@ test('palette Cmd+K : faute légère, clavier, modèle de départ, aide', async 
   await expect(arbre.getByRole('treeitem', { name: /Synopsis/ })).toBeVisible();
 
   // « Ce projet » : commandes du projet ouvert ; aide par la palette.
+  await expect(page.getByRole('dialog', { name: 'Commandes' })).toHaveCount(0);
   await page.keyboard.press('ControlOrMeta+k');
   await page.getByRole('combobox').fill('graphe');
   await page.keyboard.press('ArrowDown');
