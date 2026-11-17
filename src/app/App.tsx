@@ -14,6 +14,7 @@ const Projet = lazy(() => import('../screens/Projet'));
 const Calendrier = lazy(() => import('../screens/Calendrier'));
 const Recherche = lazy(() => import('../screens/Recherche'));
 const Reglages = lazy(() => import('../screens/Reglages'));
+const VuePartage = lazy(() => import('../partage/VuePartage'));
 
 function useLarge(): boolean {
   const mq = '(min-width: 1024px)';
@@ -83,6 +84,18 @@ export function App() {
     window.addEventListener('keydown', f);
     return () => window.removeEventListener('keydown', f);
   }, []);
+
+  // Destinataire d'un lien de partage : la vue en lecture seule, sans navigation ni édition.
+  if (route.ecran === 'partage') {
+    return (
+      <div className="app app-partage">
+        <Grille />
+        <main className="colonne-principale" id="contenu">
+          <Suspense fallback={null}><VuePartage id={route.id} cle={route.cle} /></Suspense>
+        </main>
+      </div>
+    );
+  }
 
   const contenu = (() => {
     switch (route.ecran) {

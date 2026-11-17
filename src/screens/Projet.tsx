@@ -26,6 +26,7 @@ import { numerosFigures, traitsDe, useTraits } from '../media/croquis';
 import type { Bloc } from '../data/projet';
 import type { Disposition } from '../graph/liens';
 import { exporterProjet } from '../echange/fichiers';
+import { FeuillePartage } from '../partage/FeuillePartage';
 import './projet.css';
 
 const Graphe = lazy(() => import('../graph/Graphe').then((m) => ({ default: m.Graphe })));
@@ -58,6 +59,7 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
   const [panneau, setPanneau] = useState<{ id: string; champ?: 'date' | 'couleur' } | null>(null);
   const [ajout, setAjout] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [partage, setPartage] = useState(false);
   const [reorganiser, setReorganiser] = useState(false);
   const [confirmer, setConfirmer] = useState(false);
   const [avis, setAvis] = useState<string | null>(null);
@@ -292,10 +294,13 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
         <Choix onClick={() => { definirStatut(doc, meta.statut === 'archive' ? 'en-cours' : 'archive'); setMenu(false); }}>
           {meta.statut === 'archive' ? 'Désarchiver' : 'Archiver'}
         </Choix>
+        <Choix onClick={() => { setMenu(false); setPartage(true); }}>Partager en lecture seule</Choix>
         <Choix onClick={() => { setMenu(false); void exporterProjet(doc, 'md'); }}>Exporter en Markdown</Choix>
         <Choix onClick={() => { setMenu(false); void exporterProjet(doc, 'opml'); }}>Exporter en OPML</Choix>
         <Choix rouge onClick={() => { setMenu(false); setConfirmer(true); }}>Supprimer le projet</Choix>
       </Feuille>
+
+      <FeuillePartage ouverte={partage} onFermer={() => setPartage(false)} projetId={route.id} titre={meta.titre} />
 
       <Feuille ouverte={confirmer} onFermer={() => setConfirmer(false)} titre="Supprimer le projet">
         <p className="t-corps confirmation">« {meta.titre} » et tout son contenu seront supprimés de cet appareil. Cette action est définitive.</p>

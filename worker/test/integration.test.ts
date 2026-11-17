@@ -121,3 +121,34 @@ describe.skipIf(!BASE)('Worker : espace, appairage, synchro', () => {
     expect(pre.headers.get('access-control-allow-origin')).toBeNull();
   });
 });
+
+describe.skipIf(!BASE)('Worker : partage en lecture seule', () => {
+  const id = b64([...crypto.getRandomValues(new Uint8Array(32))]);
+  const jetonDe = async () => ((await (await appel('/espace', { corps: { espace: hex(16), secours: hex(32), nom: 'Partage' } })).json()) as { jeton: string }).jeton;
+
+  it('créer, lire sans jeton, mettre à jour, refuser un autre espace, révoquer', async () => {
+    const jeton = await jetonDe();
+    const expire = Date.now() + 30 * 86_400_000;
+    expect((await appel('/partages', { jeton, corps: { id, donnees: 'AAAA', expire } })).status).toBe(201);
+    const lu = await appel(`/s/${id}`);
+    expect(lu.status).toBe(200);
+    expect(lu.headers.get('x-robots-tag')).toMatch(/noindex/);
+    expect(await lu.json()).toMatchObject({ donnees: 'AAAA', expire });
+    expect((await appel('/partages', { jeton, corps: { id, donnees: 'BBBB', expire: null } })).status).toBe(200);
+    expect(await (await appel(`/s/${id}`)).json()).toMatchObject({ donnees: 'BBBB', expire: null });
+
+    // Un autre espace ne peut ni écraser ni révoquer ce lien.
+    const autre = await jetonDe();
+    expect((await appel('/partages', { jeton: autre, corps: { id, donnees: 'CCCC', expire: null } })).status).toBe(409);
+    await appel(`/partages/${id}`, { jeton: autre, methode: 'DELETE' });
+    expect((await appel(`/s/${id}`)).status).toBe(200);
+
+    // Entrées invalides : expiration passée, sans jeton, identifiant mal formé.
+    expect((await appel('/partages', { jeton, corps: { id, donnees: 'AAAA', expire: Date.now() - 1 } })).status).toBe(400);
+    expect((await appel('/partages', { corps: { id, donnees: 'AAAA', expire: null } })).status).toBe(401);
+    expect((await appel('/s/court')).status).toBe(404);
+
+    await appel(`/partages/${id}`, { jeton, methode: 'DELETE' });
+    expect((await appel(`/s/${id}`)).status).toBe(404);
+  });
+});

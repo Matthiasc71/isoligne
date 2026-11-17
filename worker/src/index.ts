@@ -5,6 +5,7 @@ import {
 } from './espaces';
 import { compacter, envoyer, tetes, tirer, usage } from './synchro';
 import { unfurl } from './unfurl';
+import { lirePartage, poserPartage, purgerPartages, revoquerPartage } from './partages';
 import { abonner, clePublique, desabonner, essai, lirePlanning, listerAbonnements, poserPlanning, tournee } from './push';
 
 export type { Env };
@@ -41,6 +42,9 @@ export default {
       if (m === 'GET' && p === '/push/planning') return await lirePlanning(requete, env);
       if (m === 'POST' && p === '/push/planning') return await poserPlanning(requete, env);
       if (m === 'POST' && p === '/push/essai') return await essai(requete, env);
+      if (m === 'POST' && p === '/partages') return await poserPartage(requete, env);
+      if (m === 'DELETE' && (x = /^\/partages\/([A-Za-z0-9_-]{43})$/.exec(p))) return await revoquerPartage(requete, env, x[1]!);
+      if (m === 'GET' && (x = /^\/s\/([A-Za-z0-9_-]{43})$/.exec(p))) return await lirePartage(requete, env, x[1]!);
       if (m === 'GET' && p === '/unfurl') return await unfurl(requete, env, url, ctx);
       return json(requete, env, { erreur: 'introuvable' }, 404);
     } catch (e) {
@@ -51,6 +55,6 @@ export default {
 
   /** Cron (toutes les 5 minutes) : envoi des rappels échus. */
   async scheduled(_e: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-    ctx.waitUntil(tournee(env).then(() => undefined));
+    ctx.waitUntil(Promise.all([tournee(env), purgerPartages(env)]).then(() => undefined));
   },
 } satisfies ExportedHandler<Env>;

@@ -8,7 +8,9 @@ export type Route =
   | { ecran: 'calendrier' }
   | { ecran: 'recherche' }
   | { ecran: 'reglages' }
-  | { ecran: 'archives' };
+  | { ecran: 'archives' }
+  /** Lien de partage en lecture seule : identifiant et clé, jamais envoyés à GitHub Pages (après le #). */
+  | { ecran: 'partage'; id: string; cle: string };
 
 /** Routage par ancre (`#/p/<id>`) : compatible GitHub Pages et hors ligne. */
 export function lireRoute(hash: string = location.hash): Route {
@@ -34,6 +36,9 @@ export function lireRoute(hash: string = location.hash): Route {
     case 'recherche': return { ecran: 'recherche' };
     case 'reglages': return { ecran: 'reglages' };
     case 'archives': return { ecran: 'archives' };
+    case 's':
+      if (/^[A-Za-z0-9_-]{43}$/.test(parts[1] ?? '') && /^[A-Za-z0-9_-]{43}$/.test(parts[2] ?? '')) return { ecran: 'partage', id: parts[1]!, cle: parts[2]! };
+      return { ecran: 'accueil' };
     default: return { ecran: 'accueil' };
   }
 }
@@ -50,6 +55,7 @@ export function lien(route: Route): string {
       const v = q.toString() ? `?${q.toString()}` : '';
       return `#/p/${encodeURIComponent(route.id)}${b}${v}`;
     }
+    case 'partage': return `#/s/${route.id}/${route.cle}`;
     default: return `#/${route.ecran}`;
   }
 }

@@ -489,7 +489,9 @@ function Toile({
       plan, arbre, liens: liensLibres, titre: titreCentre, couleur,
       urgente, dateUrgente: urgente && arbre.parId.get(urgente)?.echeance ? dateCourte(arbre.parId.get(urgente)!.echeance!) : null,
     };
-    const nom = `${titreCentre.replace(/[^\p{L}\p{N}]+/gu, '-').toLowerCase()}-${disposition}.${format}`;
+    // Nom ASCII : Chromium ignore un nom accentué pour un téléchargement.
+    const { nomFichier } = await import('../echange/sauvegarde');
+    const nom = `${nomFichier(titreCentre)}-${disposition}.${format}`;
     if (format === 'svg') telecharger(new Blob([(await versSvg(donnees)).svg], { type: 'image/svg+xml' }), nom);
     else telecharger(await versPng(donnees), nom);
   }

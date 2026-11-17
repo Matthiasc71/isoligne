@@ -8,6 +8,7 @@ import { BoutonIcone, Segments } from '../ui/ui';
 import { SectionSynchro } from './Synchro';
 import { SectionNotifications } from './Notifications';
 import { SectionDonnees } from './Donnees';
+import { SectionPartages } from '../partage/FeuillePartage';
 import './secondaires.css';
 
 const LICENCES = [
@@ -54,6 +55,11 @@ export default function Reglages() {
       <section className="reglage" aria-labelledby="r-notifications">
         <h2 id="r-notifications" className="t-label">Notifications</h2>
         <SectionNotifications />
+      </section>
+
+      <section className="reglage" aria-labelledby="r-partages">
+        <h2 id="r-partages" className="t-label">Liens partagés</h2>
+        <SectionPartages />
       </section>
 
       <section className="reglage" aria-labelledby="r-donnees">

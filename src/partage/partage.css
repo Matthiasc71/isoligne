@@ -1,0 +1,140 @@
+/* Vue du destinataire d'un partage (lecture seule) */
+.app-partage .colonne-principale {
+  width: 100%;
+}
+.partage-tete {
+  margin-bottom: 14px;
+}
+.partage-titre {
+  margin-bottom: 20px;
+  overflow-wrap: anywhere;
+}
+.partage-cartouche {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 0 28px;
+  border-top: 1px solid var(--trait);
+  border-left: 1px solid var(--trait);
+}
+.partage-cartouche > div {
+  flex: 1 1 140px;
+  padding: 8px 12px 10px;
+  border-right: 1px solid var(--trait);
+  border-bottom: 1px solid var(--trait);
+}
+.partage-cartouche dt {
+  margin-bottom: 4px;
+}
+.partage-cartouche dd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.partage-onglets {
+  margin-bottom: 28px;
+}
+.partage-bloc + .partage-bloc {
+  margin-top: 28px;
+}
+
+/* Arborescence figée, numérotée comme la nomenclature */
+.partage-arbre {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.partage-arbre .partage-arbre {
+  padding-left: 24px;
+}
+.partage-noeud {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  border-bottom: 1px solid var(--grille-majeure);
+}
+.partage-num {
+  flex: none;
+  min-width: 3ch;
+  font-variant-numeric: tabular-nums;
+}
+.partage-texte {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.partage-noeud.faite .partage-texte,
+.partage-echeance.faite .t-corps {
+  color: var(--trait-2);
+  text-decoration: line-through;
+}
+.partage-case {
+  flex: none;
+}
+.partage-croix line {
+  stroke: var(--trait);
+  stroke-width: 1.5;
+}
+.partage-note {
+  padding: 8px 0 12px calc(3ch + 12px);
+  color: var(--trait-2);
+}
+.partage-echeance,
+.partage-lien {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  border-top: 1px solid var(--grille-majeure);
+  border-bottom: 1px solid var(--grille-majeure);
+}
+.partage-echeance .t-corps,
+.partage-lien a {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Texte riche */
+.partage-riche > * + * {
+  margin-top: 12px;
+}
+.partage-riche ul,
+.partage-riche ol {
+  padding-left: 22px;
+}
+.partage-riche blockquote {
+  margin: 0;
+  padding-left: 14px;
+  border-left: 1px solid var(--trait-2);
+}
+.partage-riche pre {
+  overflow-x: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--grille-majeure);
+  font-family: var(--police-mono);
+}
+.partage-h {
+  font-weight: 700;
+}
+
+.partage-graphe {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--grille-majeure);
+}
+
+/* Propriétaire : lien affiché et liste des Réglages */
+.partage-url {
+  padding: 10px 12px;
+  border: 1px solid var(--trait-2);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.partage-actions {
+  display: flex;
+  gap: 12px;
+  flex: none;
+}
