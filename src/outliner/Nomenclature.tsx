@@ -371,6 +371,15 @@ const LigneNoeud = memo(function LigneNoeud({
 }: PropsLigne) {
   const n = l.noeud;
   const enregistrer = useCallback((el: HTMLTextAreaElement | null) => ctrl.enregistrer(n.id, el), [ctrl, n.id]);
+  // Valeur locale, mise à jour dans l'événement de frappe lui-même : un champ contrôlé par le
+  // seul document Yjs pouvait, sous WebKit (Safari), renvoyer le curseur en début de ligne.
+  // Elle suit le document dès que son texte change ailleurs (autre appareil, annulation).
+  const [texte, setTexte] = useState(n.texte);
+  const connu = useRef(n.texte);
+  if (n.texte !== connu.current) {
+    connu.current = n.texte;
+    if (n.texte !== texte) setTexte(n.texte);
+  }
   const [decalage, setDecalage] = useState(0);
   const balayage = useRef<{ x: number; y: number; actif: boolean } | null>(null);
   const appui = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -456,16 +465,21 @@ const LigneNoeud = memo(function LigneNoeud({
           <CaseACocher coche={n.fait} onChange={() => basculerFait(doc, n.id)} libelle={`Cocher ${n.texte || 'la tâche'}`} />
         )}
         {/* Hauteur automatique sans JavaScript : une copie invisible du texte dimensionne la cellule. */}
-        <span className={`champ-auto ${premierNiveau ? 't-label' : 't-corps'}`} data-valeur={`${n.texte} `}>
+        <span className={`champ-auto ${premierNiveau ? 't-label' : 't-corps'}`} data-valeur={`${texte} `}>
           <textarea
             ref={enregistrer}
             className="ligne-texte"
-            value={n.texte}
+            value={texte}
             rows={1}
-            aria-label={`${l.numero} ${n.texte}`}
+            aria-label={`${l.numero} ${texte}`}
             placeholder={premierNiveau ? 'Branche' : 'Élément'}
             spellCheck
-            onChange={(e) => definirTexte(doc, n.id, e.target.value.replace(/\n/g, ' '))}
+            onChange={(e) => {
+              const v = e.target.value.replace(/\n/g, ' ');
+              setTexte(v);
+              connu.current = v;
+              definirTexte(doc, n.id, v);
+            }}
             onKeyDown={(e) => ctrl.surTouche(e, n.id)}
             onFocus={() => ctrl.surFocus(n.id)}
             onBlur={() => ctrl.surFlou(n.id)}
