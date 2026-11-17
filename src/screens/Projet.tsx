@@ -25,6 +25,7 @@ import { BlocLien } from '../media/BlocLien';
 import { numerosFigures, traitsDe, useTraits } from '../media/croquis';
 import type { Bloc } from '../data/projet';
 import type { Disposition } from '../graph/liens';
+import { exporterProjet } from '../echange/fichiers';
 import './projet.css';
 
 const Graphe = lazy(() => import('../graph/Graphe').then((m) => ({ default: m.Graphe })));
@@ -291,6 +292,8 @@ function PageProjet({ route, large, doc, annuler }: { route: RouteProjet; large:
         <Choix onClick={() => { definirStatut(doc, meta.statut === 'archive' ? 'en-cours' : 'archive'); setMenu(false); }}>
           {meta.statut === 'archive' ? 'Désarchiver' : 'Archiver'}
         </Choix>
+        <Choix onClick={() => { setMenu(false); void exporterProjet(doc, 'md'); }}>Exporter en Markdown</Choix>
+        <Choix onClick={() => { setMenu(false); void exporterProjet(doc, 'opml'); }}>Exporter en OPML</Choix>
         <Choix rouge onClick={() => { setMenu(false); setConfirmer(true); }}>Supprimer le projet</Choix>
       </Feuille>
 

@@ -7,12 +7,13 @@ import { IcRetour } from '../design/icones';
 import { BoutonIcone, Segments } from '../ui/ui';
 import { SectionSynchro } from './Synchro';
 import { SectionNotifications } from './Notifications';
+import { SectionDonnees } from './Donnees';
 import './secondaires.css';
 
 const LICENCES = [
   'React (MIT)', 'Yjs, y-indexeddb (MIT)', 'Dexie (Apache 2.0)', 'TipTap, ProseMirror (MIT)',
   'fractional-indexing (CC0)', 'date-fns (MIT)', 'Workbox (MIT)',
-  'Archivo, B612, B612 Mono (SIL OFL 1.1)',
+  'MiniSearch, fflate (MIT)', 'Archivo, B612, B612 Mono (SIL OFL 1.1)',
 ];
 
 export default function Reglages() {
@@ -60,6 +61,7 @@ export default function Reglages() {
         <p className="t-cote">
           {usage ?? '—'} · {protege === null ? '—' : protege ? 'protégées contre l’effacement automatique' : 'non protégées : installez l’app sur l’écran d’accueil'}
         </p>
+        <SectionDonnees />
       </section>
 
       <section className="reglage" aria-labelledby="r-apropos">

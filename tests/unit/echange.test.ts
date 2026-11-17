@@ -93,7 +93,7 @@ const note = fc.option(fc.array(fc.string({ unit: fc.constantFrom(...'ab *_`-#>1
 const noeud: fc.Memo<NoeudEch> = fc.memo((n) => fc.record({
   texte, tache: fc.boolean(), fait: fc.boolean(), echeance: date, rappels, perso: date, replie: fc.boolean(),
   couleur: fc.option(fc.constantFrom(...COULEURS), { nil: null }), note,
-  enfants: n > 1 ? fc.array(noeud(n - 1), { maxLength: 3 }) : fc.constant([]),
+  enfants: n > 1 ? fc.array(noeud(n - 1), { maxLength: 3 }) : fc.constant([] as NoeudEch[]),
 }).map((x) => ({ ...x, fait: x.tache && x.fait })));
 
 const projet = fc.record({ arbre: fc.array(noeud(3), { minLength: 1, maxLength: 4 }), titre: texte.map((t) => t.replace(/\n/g, ' ').trim() || 'Projet') })

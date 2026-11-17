@@ -255,3 +255,9 @@
   border-color: var(--trait);
   color: var(--fond);
 }
+
+.lien-souligne {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
