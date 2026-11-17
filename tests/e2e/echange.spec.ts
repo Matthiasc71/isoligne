@@ -12,6 +12,9 @@ test('export Markdown puis import ; sauvegarde puis restauration', async ({ page
   await page.getByRole('tree', { name: 'Arborescence' }).getByLabel(/^1 Repérages/).focus();
   await page.keyboard.press('End');
   await page.keyboard.press('Enter');
+  // Comme un utilisateur : on tape quand la nouvelle ligne est là et focalisée.
+  await expect(page.getByRole('tree', { name: 'Arborescence' }).getByRole('treeitem')).toHaveCount(2);
+  await expect(page.locator('textarea.ligne-texte:focus')).toHaveValue('');
   await page.keyboard.type('Tournage');
   await page.keyboard.press('Escape');
 
