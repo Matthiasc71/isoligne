@@ -25,6 +25,14 @@ import {
 import { ContexteGraphe, TYPES_NOEUDS, type NoeudGraphe } from './Noeuds';
 import { MiniCarte } from './MiniCarte';
 import { cheminArete, cheminLien, coteEtiquette, genre } from './rendu';
+import { encombrement } from './etiquettes';
+import { activerMesure } from './mesure';
+
+/** Libellés mesurés avec les vraies polices dès que le graphe est chargé. */
+const policesPretes = activerMesure();
+
+/** Zoom en dessous duquel le texte des sous-points devient illisible : le recadrage s'y arrête. */
+const ZOOM_LISIBLE = { telephone: 0.8, ordinateur: 0.75 };
 import type { DemandeLibre } from './libre.worker';
 import './graphe.css';
 
@@ -108,12 +116,20 @@ function Toile({
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  // Polices chargées : les libellés sont remesurés et le plan recalculé une fois.
+  const [polices, setPolices] = useState(0);
+  useEffect(() => {
+    let actif = true;
+    void policesPretes.then(() => { if (actif) setPolices(1); });
+    return () => { actif = false; };
+  }, []);
   const plan: Plan = useMemo(() => {
+    void polices;
     if (disposition === 'libre') return planLibre ?? { ...radial(arbre, centre), disposition: 'libre', cercles: [] };
     // Place à droite pour l'étiquette du dernier nœud.
     if (disposition === 'frise') return frise(arbre, centre, jour, Math.max(280, largeurToile - 170));
     return calculerPlan(disposition, arbre, liensLibres, centre, epingles, jour);
-  }, [disposition, planLibre, arbre, liensLibres, centre, epingles, jour, largeurToile]);
+  }, [disposition, planLibre, arbre, liensLibres, centre, epingles, jour, largeurToile, polices]);
 
   // ───────── Positions affichées : animées d'un plan à l'autre (300 ms) ─────────
   const [affiche, setAffiche] = useState<Map<string, Point>>(() => new Map(plan.noeuds.map((n) => [n.id, { x: n.x, y: n.y }])));
@@ -142,6 +158,8 @@ function Toile({
     return () => cancelAnimationFrame(image);
   }, [plan]);
 
+  const parId = useMemo(() => new Map(plan.noeuds.map((n) => [n.id, n])), [plan]);
+
   // Recadrer : bornes du plan, étiquettes comprises ; la frise démarre à gauche, à l'échelle 1.
   const recadrer = useCallback(() => {
     const duration = reduit() ? 0 : 300;
@@ -153,18 +171,28 @@ function Toile({
     }
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (const n of plan.noeuds) {
-      const g = genre(n, plan, arbre);
-      const texte = n.id === RACINE ? '' : (arbre.parId.get(n.id)?.texte ?? '');
-      const l = g === 'centre' ? 40 : g === 'branche' ? (texte.length * 10 + 24) / 2 : texte.length * 9 + 24;
-      const gauche = g === 'feuille' ? (n.x < 0 ? l : 12) : l;
-      const droite = g === 'feuille' ? (n.x >= 0 ? l : 12) : l;
-      x0 = Math.min(x0, n.x - gauche); x1 = Math.max(x1, n.x + droite);
-      y0 = Math.min(y0, n.y - 30); y1 = Math.max(y1, n.y + 40);
+      const parent = n.parent ? parId.get(n.parent) ?? null : null;
+      const r = encombrement(n.x, n.y, n.id === plan.centre ? null : n.etiquette, coteEtiquette(n, plan, parent));
+      x0 = Math.min(x0, r.x0); x1 = Math.max(x1, r.x1);
+      y0 = Math.min(y0, r.y0 - 8); y1 = Math.max(y1, r.y1 + 20);
     }
     for (const r of plan.cercles) { x0 = Math.min(x0, -r); x1 = Math.max(x1, r); y0 = Math.min(y0, -r); y1 = Math.max(y1, r); }
     if (!Number.isFinite(x0)) return;
-    void flow.fitBounds({ x: x0, y: y0, width: x1 - x0, height: y1 - y0 }, { padding: 0.06, duration });
-  }, [plan, arbre, flow]);
+    // Taille lisible minimale : si tout ne tient pas, on part du centre et l'on glisse pour voir le reste.
+    const l = conteneur.current?.clientWidth ?? 600;
+    const h = conteneur.current?.clientHeight ?? 600;
+    const zoom = Math.min(l / (x1 - x0), h / (y1 - y0)) * 0.88;
+    const minimum = large ? ZOOM_LISIBLE.ordinateur : ZOOM_LISIBLE.telephone;
+    if (zoom >= minimum) {
+      void flow.fitBounds({ x: x0, y: y0, width: x1 - x0, height: y1 - y0 }, { padding: 0.06, duration });
+      return;
+    }
+    const c = parId.get(plan.centre) ?? { x: 0, y: 0 };
+    // Arbre : la racine à gauche de l'écran ; radial : le centre au milieu.
+    const x = plan.disposition === 'arbre' ? 20 - x0 * minimum : l / 2 - c.x * minimum;
+    const y = h / 2 - c.y * minimum;
+    void flow.setViewport({ x, y, zoom: minimum }, { duration });
+  }, [plan, parId, large, flow]);
   const derniereCle = useRef('');
   useEffect(() => {
     const cle = `${disposition}|${centre}|${plan.disposition === 'libre' && planLibre !== null}`;
@@ -191,7 +219,6 @@ function Toile({
   const etape = useCallback((f: () => void) => { annuler.stopCapturing(); f(); annuler.stopCapturing(); }, [annuler]);
 
   // ───────── Nœuds React Flow ─────────
-  const parId = useMemo(() => new Map(plan.noeuds.map((n) => [n.id, n])), [plan]);
   const nodes: NoeudGraphe[] = useMemo(() => plan.noeuds.map((n) => {
     const g = genre(n, plan, arbre);
     const noeud = arbre.parId.get(n.id);
@@ -220,6 +247,8 @@ function Toile({
         edition: edition === n.id,
         couleur,
         calque: formaterCalque(calque),
+        niveau: n.etiquette?.niveau ?? 1,
+        largeur: n.etiquette?.largeur ?? 0,
       },
     };
   }), [plan, arbre, affiche, urgente, apercuDate, selection, cible, relier, edition, couleur, calque, titre]);
@@ -246,26 +275,23 @@ function Toile({
     departGlisse.current = { ...n.position };
     setSelection(n.id);
   };
-  const onNodeDrag: OnNodeDrag<NoeudGraphe> = (_e, n) => {
+  const onNodeDrag: OnNodeDrag<NoeudGraphe> = (e, n) => {
     if (plan.disposition === 'frise' && plan.axe) {
       const origine = arbre.parId.get(n.id)?.echeance ?? null;
       setApercuDate({ id: n.id, date: dateCourte(dateDepuisX(n.position.x, plan.axe, origine)) });
       return;
     }
-    // Cible de rattachement : le nœud sous le point déplacé (zone selon sa forme).
+    // Cible de rattachement : le nœud sous le doigt ou le pointeur (cadre, ou carré et libellé).
+    const point = 'touches' in e ? e.touches[0] ?? e.changedTouches[0] : e;
+    const sous = point ? flow.screenToFlowPosition({ x: point.clientX, y: point.clientY }) : n.position;
     const parentActuel = arbre.parId.get(n.id)?.parent;
     let candidat: string | null = null;
     for (const m of plan.noeuds) {
       if (m.id === n.id || m.id === parentActuel || estDansSousArbre(arbre, n.id, m.id)) continue;
       const p = afficheRef.current.get(m.id) ?? m;
-      const dx = Math.abs(n.position.x - p.x);
-      const dy = Math.abs(n.position.y - p.y);
-      const g = genre(m, plan, arbre);
-      const texte = arbre.parId.get(m.id)?.texte ?? '';
-      const dedans = g === 'centre' ? Math.hypot(dx, dy) < 32
-        : g === 'branche' ? dx < (texte.length * 10 + 24) / 2 + 6 && dy < 20
-        : Math.hypot(dx, dy) < 22;
-      if (dedans) { candidat = m.id; break; }
+      const parent = m.parent ? afficheRef.current.get(m.parent) ?? null : null;
+      const r = encombrement(p.x, p.y, m.id === plan.centre ? null : m.etiquette, coteEtiquette({ ...m, ...p }, plan, parent));
+      if (sous.x > r.x0 - 8 && sous.x < r.x1 + 8 && sous.y > r.y0 - 8 && sous.y < r.y1 + 8) { candidat = m.id; break; }
     }
     if (minuterieCible.current?.id === candidat) return;
     if (minuterieCible.current) clearTimeout(minuterieCible.current.t);
@@ -510,6 +536,7 @@ function Fond({ plan, affiche, liens, arbre, onLien }: {
   if (initiales.current === null) initiales.current = new Set(arbre.parId.keys());
   const coude = plan.disposition === 'arbre';
   const p = (id: string) => affiche.get(id);
+  const parId = new Map(plan.noeuds.map((n) => [n.id, n]));
   const axe = plan.axe;
   const bas = axe ? Math.max(60, ...axe.couloirs.map((c) => c.y + c.hauteur)) : 0;
   const etendue = 4000;
@@ -540,7 +567,7 @@ function Fond({ plan, affiche, liens, arbre, onLien }: {
         const de = p(a.de); const vers = p(a.vers);
         const nouvelle = !initiales.current?.has(a.vers);
         return de && vers ? (
-          <path key={`${a.de}-${a.vers}`} d={cheminArete(de, vers, coude, coude && Math.abs(vers.x - de.x) < Math.abs(vers.y - de.y))}
+          <path key={`${a.de}-${a.vers}`} d={cheminArete(de, vers, coude, Boolean(plan.vertical), { de: parId.get(a.de), vers: parId.get(a.vers) })}
             className={`arete${nouvelle ? ' arete-nouvelle' : ''}`} pathLength={nouvelle ? 1 : undefined} />
         ) : null;
       })}

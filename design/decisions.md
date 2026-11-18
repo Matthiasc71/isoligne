@@ -123,3 +123,9 @@ Requête : « outil de projets personnel, style blueprint/cyanotype, très épur
 - Courbes de niveau du titre : chemins périodiques dessinés sur deux périodes et glissés d'une période (transform CSS), pour une boucle sans couture et sans calcul par image.
 - Retrait : `padding-left` de la ligne = min(profondeur, 5) × 20 px.
 - Glisser : départ dès 10 px de mouvement franchement vertical sur le numéro.
+
+## Lisibilité du graphe (18.11.2026)
+- Hiérarchie par profondeur relative au centre affiché : niveau 1 en cadre, niveau 2 en carré de 9 px, niveau 3 et plus en carré de 6 px et texte de 12 px secondaire. Nouvelle taille de texte de 14 px réservée au graphe (`--taille-graphe`).
+- Libellés horizontaux (choix du propriétaire, plutôt que le long du rayon) : le radial grandit pour éviter tout chevauchement.
+- Taille lisible minimale au recadrage (choix du propriétaire) : 0,8 sur iPhone, 0,75 sur ordinateur.
+- La cible d'un glisser est le nœud sous le pointeur, pas le centre du nœud déplacé : React Flow rapporte une position décalée d'une demi-taille pendant les premiers mouvements, invisible avec des carrés de 9 px mais pas avec des cadres.

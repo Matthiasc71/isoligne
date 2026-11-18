@@ -3,6 +3,7 @@ import { forceCollide, forceLink, forceManyBody, forceSimulation, type Simulatio
 import { RACINE, type DateLocale } from '../data/schema';
 import type { Arbre } from '../tree/arbre';
 import type { Disposition, LienLibre, Point } from './liens';
+import { chevauchement, coteRadial, encombrement, etiquette, niveauDe, type Etiquette, type Rect } from './etiquettes';
 
 /** Nœud placé sur la toile. La racine affichée (projet ou branche ouverte) est le nœud `centre`. */
 export interface NoeudPlace extends Point {
@@ -11,6 +12,8 @@ export interface NoeudPlace extends Point {
   profondeur: number;
   feuille: boolean;
   epingle: boolean;
+  /** Libellé coupé et mesuré (null pour le centre). */
+  etiquette: Etiquette | null;
 }
 
 export interface Arete { de: string; vers: string }
@@ -37,23 +40,32 @@ export interface Plan {
   axe: AxeFrise | null;
   /** Nœuds sans date, absents de la frise. */
   sansDate: number;
+  /** Arbre de haut en bas. */
+  vertical?: boolean;
 }
 
-export const PAS_RADIAL = 120;
-export const ECART_RADIAL = 40;
-export const PAS_ARBRE = { niveau: 200, frere: 48 };
+/** Écart minimal entre deux cercles de construction. */
+export const PAS_RADIAL = 72;
+/** Marge minimale entre deux encombrements de nœuds. */
+export const MARGE = 6;
+/** Arbre : écart entre la fin d'une colonne et le début de la suivante ; écarts verticaux. */
+export const PAS_ARBRE = { colonne: 56, frere: 10, cousin: 22 };
 export const PAS_ARBRE_VERTICAL = { niveau: 96, frere: 150 };
 
-interface Brut { id: string; enfants: Brut[] }
+interface Brut { id: string; enfants: Brut[]; etiquette: Etiquette | null }
 
 /** Sous-arbre visible à partir de `centre` : les branches repliées cachent leur descendance. */
 function sousArbre(arbre: Arbre, centre: string): Brut {
-  const construire = (id: string): Brut => {
+  const construire = (id: string, profondeur: number): Brut => {
     const n = arbre.parId.get(id);
     const enfants = n?.replie ? [] : (arbre.enfants.get(id) ?? []);
-    return { id, enfants: enfants.map(construire) };
+    return {
+      id,
+      enfants: enfants.map((e) => construire(e, profondeur + 1)),
+      etiquette: profondeur === 0 ? null : etiquette(n?.texte ?? '', niveauDe(profondeur), Boolean(n?.echeance)),
+    };
   };
-  return construire(centre);
+  return construire(centre, 0);
 }
 
 function appliquerEpingles(noeuds: NoeudPlace[], epingles: Map<string, Point>): void {
@@ -70,6 +82,7 @@ function placer(racine: HierarchyPointNode<Brut>, f: (n: HierarchyPointNode<Brut
     profondeur: n.depth,
     feuille: !n.children?.length,
     epingle: false,
+    etiquette: n.data.etiquette,
     ...f(n),
   }));
 }
@@ -78,15 +91,31 @@ function aretesDe(noeuds: NoeudPlace[]): Arete[] {
   return noeuds.filter((n) => n.parent !== null).map((n) => ({ de: n.parent!, vers: n.id }));
 }
 
-/** Radial : le centre au milieu, un cercle de construction par niveau, assez grand pour que les nœuds ne se chevauchent pas. */
+/**
+ * Radial : le centre au milieu, un cercle de construction par niveau. Les angles suivent
+ * l'arbre (d3 tidy tree) ; chaque cercle s'agrandit jusqu'à ce que ses nœuds, libellés
+ * compris, ne recouvrent ni leurs voisins ni les cercles intérieurs.
+ */
 export function radial(arbre: Arbre, centre: string = RACINE, epingles = new Map<string, Point>()): Plan {
   const h = hierarchy(sousArbre(arbre, centre), (d) => d.enfants);
-  const racine = tree<Brut>().size([2 * Math.PI, 1]).separation((a, b) => (a.parent === b.parent ? 1 : 2) / Math.max(1, a.depth))(h);
-  const parNiveau: number[] = [];
-  racine.each((n) => { parNiveau[n.depth] = (parNiveau[n.depth] ?? 0) + 1; });
+  const racine = tree<Brut>().size([2 * Math.PI, 1]).separation((a, b) => (a.parent === b.parent ? 1 : 1.6))(h);
+  const parNiveau: HierarchyPointNode<Brut>[][] = [];
+  racine.each((n) => { (parNiveau[n.depth] ??= []).push(n); });
   const rayons: number[] = [0];
+  const fixes: Rect[] = [encombrement(0, 0, null, 'droite')];
+  const boites = (noeuds: HierarchyPointNode<Brut>[], r: number) => noeuds.map((n) => {
+    const a = n.x - Math.PI / 2;
+    const x = r * Math.cos(a);
+    const y = r * Math.sin(a);
+    return encombrement(x, y, n.data.etiquette, coteRadial(x, y));
+  });
   for (let d = 1; d < parNiveau.length; d++) {
-    rayons[d] = Math.max(rayons[d - 1]! + PAS_RADIAL, (parNiveau[d]! * ECART_RADIAL) / (2 * Math.PI));
+    const noeuds = parNiveau[d]!;
+    let r = rayons[d - 1]! + PAS_RADIAL + (d === 1 ? 24 : 0);
+    // Agrandir par pas croissants : le cercle ne grandit que du nécessaire.
+    for (let i = 0; i < 400 && chevauchement(boites(noeuds, r), fixes, MARGE); i++) r += Math.max(8, r * 0.04);
+    rayons[d] = r;
+    fixes.push(...boites(noeuds, r));
   }
   const noeuds = placer(racine, (n) => {
     const r = rayons[n.depth] ?? 0;
@@ -98,14 +127,44 @@ export function radial(arbre: Arbre, centre: string = RACINE, epingles = new Map
   return { disposition: 'radial', centre, noeuds, aretes: aretesDe(noeuds), cercles: rayons.slice(1), axe: null, sansDate: 0 };
 }
 
-/** Arbre : de gauche à droite (ou de haut en bas), connecteurs orthogonaux. */
+/** Largeur occupée par un nœud dans une colonne de l'arbre (le libellé est à droite du carré). */
+export function largeurColonne(e: Etiquette | null): number {
+  const r = encombrement(0, 0, e, 'droite');
+  return r.x1 - r.x0;
+}
+function hauteurArbre(e: Etiquette | null): number {
+  const r = encombrement(0, 0, e, 'droite');
+  return r.y1 - r.y0;
+}
+
+/**
+ * Arbre : de gauche à droite, connecteurs orthogonaux. Chaque colonne commence après le
+ * plus long libellé de la précédente ; l'écart vertical suit la hauteur des libellés.
+ * Les nœuds d'une colonne sont alignés à gauche (x = bord gauche + demi-largeur du cadre ou du carré).
+ * `vertical` : de haut en bas, pas fixes (export, petits écrans étroits).
+ */
 export function arborescence(
   arbre: Arbre, centre: string = RACINE, epingles = new Map<string, Point>(), vertical = false,
 ): Plan {
   const h = hierarchy(sousArbre(arbre, centre), (d) => d.enfants);
-  const pas = vertical ? PAS_ARBRE_VERTICAL : PAS_ARBRE;
-  const racine = tree<Brut>().nodeSize([pas.frere, pas.niveau])(h);
-  const noeuds = placer(racine, (n) => (vertical ? { x: n.x, y: n.y } : { x: n.y, y: n.x }));
+  if (vertical) {
+    const racine = tree<Brut>().nodeSize([PAS_ARBRE_VERTICAL.frere, PAS_ARBRE_VERTICAL.niveau])(h);
+    const noeuds = placer(racine, (n) => ({ x: n.x, y: n.y }));
+    appliquerEpingles(noeuds, epingles);
+    return { disposition: 'arbre', centre, noeuds, aretes: aretesDe(noeuds), cercles: [], axe: null, sansDate: 0, vertical: true };
+  }
+  const racine = tree<Brut>().nodeSize([1, 1]).separation((a, b) =>
+    (hauteurArbre(a.data.etiquette) + hauteurArbre(b.data.etiquette)) / 2 + (a.parent === b.parent ? PAS_ARBRE.frere : PAS_ARBRE.cousin))(h);
+  // Bord gauche de chaque colonne.
+  const largeurs: number[] = [];
+  racine.each((n) => { largeurs[n.depth] = Math.max(largeurs[n.depth] ?? 0, largeurColonne(n.data.etiquette)); });
+  const gauches: number[] = [0];
+  for (let d = 1; d < largeurs.length; d++) gauches[d] = gauches[d - 1]! + largeurs[d - 1]! + PAS_ARBRE.colonne;
+  const noeuds = placer(racine, (n) => {
+    const r = encombrement(0, 0, n.data.etiquette, 'droite');
+    // Centre : son cercle commence au bord gauche de la colonne 0.
+    return { x: gauches[n.depth]! - r.x0, y: n.x };
+  });
   appliquerEpingles(noeuds, epingles);
   return { disposition: 'arbre', centre, noeuds, aretes: aretesDe(noeuds), cercles: [], axe: null, sansDate: 0 };
 }
@@ -216,7 +275,7 @@ export function frise(arbre: Arbre, centre: string = RACINE, aujourdhui: DateLoc
       finsDeLigne[ligne] = x + LARGEUR_ETIQUETTE;
       noeuds.push({
         id: n.id, parent: null, profondeur: 1, feuille: !(arbre.enfants.get(n.id)?.length),
-        epingle: false, x, y: y + COULOIR / 2 + 8 + ligne * (COULOIR * 0.75),
+        epingle: false, etiquette: etiquette(n.texte, 2, true), x, y: y + COULOIR / 2 + 8 + ligne * (COULOIR * 0.75),
       });
     }
     const hauteur = COULOIR + (finsDeLigne.length - 1) * COULOIR * 0.75;

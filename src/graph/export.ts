@@ -6,6 +6,10 @@ import type { Arbre } from '../tree/arbre';
 import type { Plan } from './dispositions';
 import type { LienLibre } from './liens';
 import { cheminArete, cheminLien, coteEtiquette, genre } from './rendu';
+import { CADRE, CARRE, ECART_ETIQUETTE, RAYON_CENTRE, STYLES, encombrement } from './etiquettes';
+
+/** Taille des libellés du graphe (token --taille-graphe). */
+const TAILLE_GRAPHE = 14;
 
 const echapper = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
@@ -45,11 +49,16 @@ export async function versSvg(d: DonneesExport): Promise<{ svg: string; largeur:
   const { plan, arbre } = d;
   const pos = new Map(plan.noeuds.map((n) => [n.id, n]));
   const marge = 80;
-  const xs = plan.noeuds.map((n) => n.x);
-  const ys = plan.noeuds.map((n) => n.y);
+  const xs: number[] = [];
+  const ys: number[] = [];
+  for (const n of plan.noeuds) {
+    const parent = n.parent ? pos.get(n.parent) ?? null : null;
+    const r = encombrement(n.x, n.y, n.id === plan.centre ? null : n.etiquette, coteEtiquette(n, plan, parent));
+    xs.push(r.x0, r.x1); ys.push(r.y0, r.y1 + 20);
+  }
   for (const r of plan.cercles) { xs.push(-r, r); ys.push(-r, r); }
-  const minX = Math.min(0, ...xs) - marge - 120;
-  const maxX = Math.max(0, ...xs) + marge + 120;
+  const minX = Math.min(0, ...xs) - marge;
+  const maxX = Math.max(0, ...xs) + marge;
   const minY = Math.min(0, ...ys) - marge;
   const maxY = Math.max(0, ...ys) + marge;
   const largeur = Math.round(maxX - minX);
@@ -64,7 +73,9 @@ export async function versSvg(d: DonneesExport): Promise<{ svg: string; largeur:
 @font-face{font-family:'B612';src:url(data:font/woff2;base64,${b612}) format('woff2')}
 @font-face{font-family:'B612 Mono';src:url(data:font/woff2;base64,${mono}) format('woff2')}
 .l{font-family:'Archivo Variable';font-weight:700;font-stretch:125%;font-size:12px;letter-spacing:.14em;fill:${c.trait};text-transform:uppercase}
-.c{font-family:'B612';font-size:16px;fill:${c.trait}}
+.l1{font-family:'Archivo Variable';font-weight:700;font-stretch:125%;font-size:${TAILLE_GRAPHE}px;letter-spacing:.1em;fill:${c.trait};text-transform:uppercase}
+.c2{font-family:'B612';font-size:${TAILLE_GRAPHE}px;fill:${c.trait}}
+.c3{font-family:'B612';font-size:12px;fill:${c.trait2}}
 .f{fill:${c.trait2}}
 .m{font-family:'B612 Mono';font-size:12px;fill:${c.trait2}}
 </style>
@@ -91,10 +102,10 @@ export async function versSvg(d: DonneesExport): Promise<{ svg: string; largeur:
   }
 
   const coude = plan.disposition === 'arbre';
-  const vertical = coude && plan.noeuds.some((n) => n.profondeur === 1 && n.y > 0 && Math.abs(n.x) < 1e-6);
+  const vertical = coude && Boolean(plan.vertical);
   for (const a of plan.aretes) {
     const de = pos.get(a.de); const vers = pos.get(a.vers);
-    if (de && vers) parties.push(`<path d="${cheminArete(de, vers, coude, vertical)}" fill="none" stroke="${c.trait}" stroke-opacity=".75"/>`);
+    if (de && vers) parties.push(`<path d="${cheminArete(de, vers, coude, vertical, { de, vers })}" fill="none" stroke="${c.trait}" stroke-opacity=".75"/>`);
   }
   for (const l of d.liens) {
     const de = pos.get(l.de); const vers = pos.get(l.vers);
@@ -108,25 +119,39 @@ export async function versSvg(d: DonneesExport): Promise<{ svg: string; largeur:
     const g = genre(n, plan, arbre);
     const noeud = arbre.parId.get(n.id);
     const fait = noeud?.tache && noeud.fait;
-    const texte = echapper(n.id === RACINE ? d.titre : noeud?.texte ?? '');
-    if (g === 'centre') {
-      parties.push(`<circle cx="${n.x}" cy="${n.y}" r="28" fill="${c.fond}" stroke="${c.trait}"/>`);
+    const e = n.etiquette;
+    const urgente = n.id === d.urgente && d.dateUrgente ? echapper(d.dateUrgente) : null;
+    if (g === 'centre' || !e) {
+      parties.push(`<circle cx="${n.x}" cy="${n.y}" r="${RAYON_CENTRE}" fill="${c.fond}" stroke="${c.trait}"/>`);
       parties.push(`<rect x="${n.x - 7}" y="${n.y - 7}" width="14" height="14" fill="${c.calque}"/>`);
-      if (n.id !== RACINE) parties.push(`<text class="l" x="${n.x}" y="${n.y + 48}" text-anchor="middle">${texte}</text>`);
-    } else if (g === 'branche') {
-      const l = Math.max(60, texte.length * 10 + 24);
-      parties.push(`<rect x="${n.x - l / 2}" y="${n.y - 14}" width="${l}" height="28" fill="${c.fond}" stroke="${fait ? c.trait2 : c.trait}"/>`);
-      parties.push(`<text class="l${fait ? ' f' : ''}" x="${n.x}" y="${n.y + 4}" text-anchor="middle">${texte}</text>`);
-    } else {
-      const parent = n.parent ? pos.get(n.parent) ?? null : null;
-      const cote = coteEtiquette(n, plan, parent);
-      parties.push(fait
-        ? `<rect x="${n.x - 4.5}" y="${n.y - 4.5}" width="9" height="9" fill="${c.fond}" stroke="${c.trait2}"/><path d="M${n.x - 3} ${n.y - 3}l6 6m0-6-6 6" stroke="${c.trait2}"/>`
-        : `<rect x="${n.x - 4.5}" y="${n.y - 4.5}" width="9" height="9" fill="${n.id === d.urgente ? c.redline : c.trait}"/>`);
-      const [tx, ty, ancre] = cote === 'droite' ? [n.x + 12, n.y + 5, 'start'] : cote === 'gauche' ? [n.x - 12, n.y + 5, 'end'] : cote === 'haut' ? [n.x, n.y - 14, 'middle'] : [n.x, n.y + 24, 'middle'];
-      parties.push(`<text class="c${fait ? ' f' : ''}" x="${tx}" y="${ty}" text-anchor="${ancre}">${texte}</text>`);
-      if (n.id === d.urgente && d.dateUrgente) parties.push(`<text class="m" x="${tx}" y="${ty + 16}" text-anchor="${ancre}" fill="${c.redline}" style="fill:${c.redline}">${echapper(d.dateUrgente)}</text>`);
+      if (n.id !== RACINE) parties.push(`<text class="l" x="${n.x}" y="${n.y + 48}" text-anchor="middle">${echapper(noeud?.texte ?? '')}</text>`);
+      continue;
     }
+    const style = STYLES[e.niveau];
+    const lignes = (x: number, y0: number, ancre: string, classe: string) => parties.push(
+      `<text class="${classe}${fait ? ' f' : ''}" text-anchor="${ancre}">${e.lignes.map((t, i) =>
+        `<tspan x="${x}" y="${y0 + i * style.ligne + style.ligne * 0.75}">${echapper(t)}</tspan>`).join('')}</text>`,
+    );
+    if (g === 'branche') {
+      const r = encombrement(n.x, n.y, { ...e, date: false }, 'droite');
+      parties.push(`<rect x="${r.x0 + 0.5}" y="${r.y0 + 0.5}" width="${r.x1 - r.x0 - 1}" height="${r.y1 - r.y0 - 1}" fill="${c.fond}" stroke="${urgente ? c.redline : fait ? c.trait2 : c.trait}"/>`);
+      lignes(r.x0 + 1 + CADRE.x, r.y0 + 1 + CADRE.y, 'start', 'l1');
+      if (urgente) parties.push(`<text class="m" x="${r.x0}" y="${r.y1 + 16}" style="fill:${c.redline}">${urgente}</text>`);
+      continue;
+    }
+    const parent = n.parent ? pos.get(n.parent) ?? null : null;
+    const cote = coteEtiquette(n, plan, parent);
+    const t = CARRE[e.niveau];
+    const plein = n.id === d.urgente ? c.redline : e.niveau === 3 ? c.trait2 : c.trait;
+    parties.push(fait
+      ? `<rect x="${n.x - t / 2 + 0.5}" y="${n.y - t / 2 + 0.5}" width="${t - 1}" height="${t - 1}" fill="${c.fond}" stroke="${c.trait2}"/><path d="M${n.x - t / 3} ${n.y - t / 3}L${n.x + t / 3} ${n.y + t / 3}M${n.x + t / 3} ${n.y - t / 3}L${n.x - t / 3} ${n.y + t / 3}" stroke="${c.trait2}"/>`
+      : `<rect x="${n.x - t / 2}" y="${n.y - t / 2}" width="${t}" height="${t}" fill="${plein}"/>`);
+    const d0 = t / 2 + ECART_ETIQUETTE;
+    const [tx, y0, ancre] = cote === 'droite' ? [n.x + d0, n.y - e.hauteur / 2, 'start']
+      : cote === 'gauche' ? [n.x - d0, n.y - e.hauteur / 2, 'end']
+        : cote === 'haut' ? [n.x, n.y - d0 - e.hauteur, 'middle'] : [n.x, n.y + d0, 'middle'];
+    lignes(tx, y0, ancre, e.niveau === 3 ? 'c3' : 'c2');
+    if (urgente) parties.push(`<text class="m" x="${tx}" y="${y0 + e.lignes.length * style.ligne + 12}" text-anchor="${ancre}" style="fill:${c.redline}">${urgente}</text>`);
   }
   parties.push('</svg>');
   return { svg: parties.join('\n'), largeur, hauteur };

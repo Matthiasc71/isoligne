@@ -3,6 +3,7 @@ import type { Node, NodeProps } from '@xyflow/react';
 import { CarreCalque, ReperesAngle } from '../design/signature';
 import type { CleCouleur } from '../data/schema';
 import type { Cote } from './rendu';
+import type { Niveau } from './etiquettes';
 
 export interface DonneesNoeud extends Record<string, unknown> {
   libelle: string;
@@ -17,6 +18,10 @@ export interface DonneesNoeud extends Record<string, unknown> {
   edition: boolean;
   couleur: CleCouleur;
   calque: string;
+  /** 1 : point principal ; 2 : sous-point ; 3 : niveaux plus profonds. */
+  niveau: Niveau;
+  /** Largeur réservée au libellé par la disposition (la coupure des lignes en découle). */
+  largeur: number;
 }
 
 export type NoeudGraphe = Node<DonneesNoeud, 'centre' | 'branche' | 'feuille'>;
@@ -76,8 +81,8 @@ export const NoeudBranche = memo(function NoeudBranche({ id, data }: NodeProps<N
   return (
     <div className={`g-branche${data.fait ? ' g-fait' : ''}${data.urgent ? ' g-urgent' : ''}`}>
       {data.edition
-        ? <Renommer id={id} valeur={data.libelle} className="t-label" />
-        : <span className="t-label">{data.libelle || 'Sans titre'}</span>}
+        ? <Renommer id={id} valeur={data.libelle} className="g-libelle-1" />
+        : <span className="g-libelle-1" style={{ width: data.largeur || undefined }}>{data.libelle || 'Sans titre'}</span>}
       <Marques d={data} />
       {data.date && <span className={`t-cote g-date g-date-sous${data.urgent ? ' redline' : ''}`}>{data.date}</span>}
     </div>
@@ -86,7 +91,7 @@ export const NoeudBranche = memo(function NoeudBranche({ id, data }: NodeProps<N
 
 export const NoeudFeuille = memo(function NoeudFeuille({ id, data }: NodeProps<NoeudGraphe>) {
   return (
-    <div className={`g-feuille${data.fait ? ' g-fait' : ''}${data.urgent ? ' g-urgent' : ''}`}>
+    <div className={`g-feuille g-n${data.niveau}${data.fait ? ' g-fait' : ''}${data.urgent ? ' g-urgent' : ''}`}>
       <span className="g-carre">
         {data.fait && (
           <svg width="9" height="9" viewBox="0 0 9 9" aria-hidden="true"><path d="M1.5 1.5l6 6m0-6-6 6" /></svg>
@@ -95,8 +100,8 @@ export const NoeudFeuille = memo(function NoeudFeuille({ id, data }: NodeProps<N
       <span className="g-reperes-feuille"><Marques d={data} /></span>
       <span className={`g-etiquette g-${data.cote}`}>
         {data.edition
-          ? <Renommer id={id} valeur={data.libelle} className="t-corps" />
-          : <span className="t-corps">{data.libelle || 'Sans titre'}</span>}
+          ? <Renommer id={id} valeur={data.libelle} className="g-libelle" />
+          : <span className="g-libelle" style={{ width: data.largeur || undefined }}>{data.libelle || 'Sans titre'}</span>}
         {data.date && <span className={`t-cote g-date${data.urgent ? ' redline' : ''}`}>{data.date}</span>}
       </span>
     </div>

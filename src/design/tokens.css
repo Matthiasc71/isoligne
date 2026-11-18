@@ -28,6 +28,8 @@
   --taille-titre: 28px;
   --taille-corps: 16px;
   --taille-cote: 12px;
+  /* Graphe : points principaux et sous-points (design/briefs/graphe-lisibilite.md). */
+  --taille-graphe: 14px;
 
   --marge: 28px;
   --section: 40px;

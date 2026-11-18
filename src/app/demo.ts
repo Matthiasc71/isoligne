@@ -27,6 +27,37 @@ export async function chargerGrandProjet(s: Stockage): Promise<string> {
   return id;
 }
 
+/** Projet très indenté aux libellés longs, pour vérifier la lisibilité du graphe. */
+export async function chargerProjetDense(s: Stockage): Promise<string> {
+  const id = await s.creerProjet({ titre: 'Parafoudre', type: 'pro', couleur: 'ciel' });
+  const { doc } = s.ouvrir(id);
+  doc.transact(() => {
+    const etude = creerNoeud(doc, RACINE, undefined, { texte: 'Étude préalable' });
+    creerNoeud(doc, etude, undefined, { texte: 'Relevé du site', tache: true });
+    const normes = creerNoeud(doc, etude, undefined, { texte: 'Normes applicables' });
+    creerNoeud(doc, normes, undefined, { texte: 'NF C 15-100' });
+    creerNoeud(doc, normes, undefined, { texte: 'NF EN 61643-11' });
+    const cdc = creerNoeud(doc, RACINE, undefined, { texte: 'Construire cahier des charges du parafoudre' });
+    creerNoeud(doc, cdc, undefined, { texte: 'Définir le niveau de protection', tache: true });
+    const courants = creerNoeud(doc, cdc, undefined, { texte: 'Courants de décharge' });
+    creerNoeud(doc, courants, undefined, { texte: 'In nominal' });
+    creerNoeud(doc, courants, undefined, { texte: 'Imax' });
+    creerNoeud(doc, courants, undefined, { texte: 'Iimp onde 10/350' });
+    creerNoeud(doc, cdc, undefined, { texte: 'Tension de protection Up', tache: true, echeance: dans(4) });
+    creerNoeud(doc, cdc, undefined, { texte: 'Coordination avec les disjoncteurs', tache: true });
+    const env = creerNoeud(doc, cdc, undefined, { texte: 'Environnement' });
+    creerNoeud(doc, env, undefined, { texte: 'Température' });
+    creerNoeud(doc, env, undefined, { texte: 'Indice IP' });
+    creerNoeud(doc, cdc, undefined, { texte: 'Signalisation de fin de vie', tache: true });
+    const valid = creerNoeud(doc, RACINE, undefined, { texte: 'Validation' });
+    creerNoeud(doc, valid, undefined, { texte: 'Relecture bureau d’études', tache: true });
+    creerNoeud(doc, valid, undefined, { texte: 'Signature client', tache: true });
+    creerNoeud(doc, RACINE, undefined, { texte: 'Commande', tache: true, echeance: dans(21) });
+  });
+  await s.indexer(id, doc);
+  return id;
+}
+
 /** Données de démonstration reprenant les maquettes (développement et tests uniquement). */
 export async function chargerDemo(s: Stockage): Promise<void> {
   const cafe = await s.creerProjet({ titre: 'Café Orge', type: 'pro', couleur: 'vert-deau' });

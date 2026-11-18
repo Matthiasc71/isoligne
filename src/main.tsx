@@ -34,9 +34,11 @@ if (import.meta.env.DEV || import.meta.env.VITE_DEMO === '1') {
   if (new URLSearchParams(location.search).has('demo')) {
     void stockage.espacePret.then(async () => {
       if (stockage.idsProjets().length === 0) {
-        const { chargerDemo, chargerGrandProjet } = await import('./app/demo');
+        const { chargerDemo, chargerGrandProjet, chargerProjetDense } = await import('./app/demo');
         await chargerDemo(stockage);
-        if (new URLSearchParams(location.search).get('demo') === '500') await chargerGrandProjet(stockage);
+        const variante = new URLSearchParams(location.search).get('demo');
+        if (variante === '500') await chargerGrandProjet(stockage);
+        if (variante === 'dense') await chargerProjetDense(stockage);
       }
     });
   }

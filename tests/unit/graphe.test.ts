@@ -4,8 +4,31 @@ import { creerNoeud, definirEcheance, basculerReplie, lireArbre, supprimer } fro
 import { RACINE } from '../../src/data/schema';
 import { creerLien, epingler, lireLiens, lirePositions, reorganiser, supprimerLien } from '../../src/graph/liens';
 import {
-  arborescence, dateDepuisX, frise, libre, numeroJour, radial, dateDuJour,
+  arborescence, dateDepuisX, frise, libre, numeroJour, radial, dateDuJour, type Plan,
 } from '../../src/graph/dispositions';
+import { encombrement, etiquette, niveauDe, recouvre } from '../../src/graph/etiquettes';
+import { coteEtiquette, genre } from '../../src/graph/rendu';
+
+/** Projet très indenté aux libellés longs (cas signalé : radial et arbre illisibles). */
+function dense() {
+  const doc = new Y.Doc();
+  const cdc = creerNoeud(doc, RACINE, undefined, { texte: 'Construire cahier des charges du parafoudre' });
+  for (const t of ['Définir le niveau de protection', 'Tension de protection Up', 'Coordination avec les disjoncteurs', 'Signalisation de fin de vie']) {
+    const n = creerNoeud(doc, cdc, undefined, { texte: t });
+    for (const u of ['In nominal', 'Imax', 'Iimp onde 10/350']) creerNoeud(doc, n, undefined, { texte: `${u} ${t.slice(0, 6)}` });
+  }
+  const v = creerNoeud(doc, RACINE, undefined, { texte: 'Validation' });
+  creerNoeud(doc, v, undefined, { texte: 'Relecture bureau d’études' });
+  creerNoeud(doc, RACINE, undefined, { texte: 'Commande', echeance: '2026-12-09' });
+  return lireArbre(doc);
+}
+
+function aucunChevauchement(plan: Plan) {
+  const pos = new Map(plan.noeuds.map((n) => [n.id, n]));
+  const boites = plan.noeuds.map((n) => encombrement(n.x, n.y, n.profondeur === 0 ? null : n.etiquette,
+    coteEtiquette(n, plan, n.parent ? pos.get(n.parent) ?? null : null)));
+  for (let i = 0; i < boites.length; i++) for (let j = i + 1; j < boites.length; j++) expect(recouvre(boites[i]!, boites[j]!)).toBe(false);
+}
 
 function projet() {
   const doc = new Y.Doc();
@@ -76,11 +99,44 @@ describe('dispositions', () => {
   it('arbre : niveaux alignés de gauche à droite, ou de haut en bas', () => {
     const p = projet();
     const h = arborescence(lireArbre(p.doc));
-    const parNiveau = new Map<number, Set<number>>();
-    for (const n of h.noeuds) parNiveau.set(n.profondeur, (parNiveau.get(n.profondeur) ?? new Set()).add(n.x));
-    for (const xs of parNiveau.values()) expect(xs.size).toBe(1);
+    // Colonnes alignées par leur bord gauche ; chacune commence après la plus longue étiquette de la précédente.
+    const gauches = new Map<number, Set<number>>();
+    const droites = new Map<number, number>();
+    for (const n of h.noeuds) {
+      const r = encombrement(n.x, n.y, n.profondeur === 0 ? null : n.etiquette, 'droite');
+      gauches.set(n.profondeur, (gauches.get(n.profondeur) ?? new Set()).add(Math.round(r.x0)));
+      droites.set(n.profondeur, Math.max(droites.get(n.profondeur) ?? -Infinity, r.x1));
+    }
+    for (const xs of gauches.values()) expect(xs.size).toBe(1);
+    for (const [d, xs] of gauches) if (d > 0) expect([...xs][0]!).toBeGreaterThan(droites.get(d - 1)!);
     const v = arborescence(lireArbre(p.doc), RACINE, new Map(), true);
     for (const n of v.noeuds) expect(n.y).toBe(n.profondeur * 96);
+  });
+
+  it('radial et arbre : aucun nœud ne recouvre un autre, libellés compris', () => {
+    const arbre = dense();
+    aucunChevauchement(radial(arbre));
+    aucunChevauchement(arborescence(arbre));
+  });
+
+  it('hiérarchie : points principaux en cadre, sous-points en carré, plus petits au-delà du niveau 2', () => {
+    const arbre = dense();
+    const plan = radial(arbre);
+    for (const n of plan.noeuds) {
+      if (n.profondeur === 0) { expect(genre(n, plan)).toBe('centre'); continue; }
+      expect(genre(n, plan)).toBe(n.profondeur === 1 ? 'branche' : 'feuille');
+      expect(n.etiquette?.niveau).toBe(niveauDe(n.profondeur));
+    }
+    // Un libellé long se coupe en lignes bornées ; le niveau 1 est plus grand que le niveau 2, lui-même plus grand que le 3.
+    const long = 'Construire cahier des charges du parafoudre';
+    const [n1, n2, n3] = ([1, 2, 3] as const).map((n) => etiquette(long, n));
+    expect(n1!.lignes.length).toBeGreaterThan(1);
+    expect(n1!.lignes.length).toBeLessThanOrEqual(3);
+    expect(n2!.lignes.length).toBeLessThanOrEqual(2);
+    const court = ([1, 2, 3] as const).map((n) => etiquette('Imax', n));
+    expect(court[0]!.largeur).toBeGreaterThan(court[1]!.largeur);
+    expect(court[1]!.largeur).toBeGreaterThan(court[2]!.largeur);
+    expect(n3!.hauteur / n3!.lignes.length).toBeLessThan(n2!.hauteur / n2!.lignes.length);
   });
 
   it('libre : déterministe, sans chevauchement, les liens libres rapprochent', () => {

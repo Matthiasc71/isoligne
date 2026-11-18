@@ -54,6 +54,17 @@ typography:
     fontSize: "16px"
     fontWeight: 400
     lineHeight: 1.45
+  graphe-principal:
+    fontFamily: "'Archivo Variable', 'Arial Narrow', sans-serif"
+    fontSize: "14px"
+    fontWeight: 700
+    lineHeight: "17px"
+    letterSpacing: "0.1em"
+  graphe-sous-point:
+    fontFamily: "'B612', system-ui, sans-serif"
+    fontSize: "14px"
+    fontWeight: 400
+    lineHeight: "19px"
   cote:
     fontFamily: "'B612 Mono', ui-monospace, monospace"
     fontSize: "12px"
@@ -176,7 +187,7 @@ Huit couleurs, chacune en valeur nuit et jour : orange, vert d'eau, lilas, ocre,
 - **Cote** (mono 400, 12 px, chiffres tabulaires) : dates (« 19.11 »), numéros (« 2.1 »), pourcentages, « 2 faites ».
 
 ### Named Rules
-**La règle des trois tailles.** Trois tailles de texte au plus par écran. L'accueil : display, body, cote. La page projet : title, body, cote (label et cote partagent 12 px).
+**La règle des trois tailles.** Trois tailles de texte au plus par écran. L'accueil : display, body, cote. La page projet : title, body, cote (label et cote partagent 12 px). Le graphe : 14 px (points principaux et sous-points), 12 px (niveaux profonds, onglets, cotes) et le body du panneau de sélection.
 
 **La règle des chiffres en mono.** Tout chiffre (date, numéro, pourcentage, compte) est en B612 Mono. Un chiffre en B612 proportionnelle est une erreur.
 
@@ -239,8 +250,11 @@ Implémentés dans `src/design/signature.tsx` (signature), `src/ui/ui.tsx` (prim
 
 ### Graphe (signature)
 - **Centre** : cercle de 56 px bordé, carré de calque de 14 px au milieu ; une branche ouverte (poupée russe) écrit son libellé en Label dessous.
-- **Branche** : rectangle bordé de 1 px, libellé en Label capitales, fond papier (il masque les arêtes qui le traversent).
-- **Feuille** : carré plein de 9 px, libellé en body vers l'extérieur du plan ; la seule redline a son carré et sa date en rouge.
+- **Hiérarchie par profondeur** (relative au centre affiché) : la taille et la forme disent le niveau, jamais la couleur seule.
+- **Point principal** (niveau 1, avec ou sans enfants) : rectangle bordé de 1 px, libellé en capitales Archivo 700 de 14 px (interlettrage 0,1 em), jusqu'à 3 lignes, fond papier (il masque les arêtes qui le traversent).
+- **Sous-point** (niveau 2) : carré plein de 9 px, libellé B612 de 14 px vers l'extérieur du plan, jusqu'à 2 lignes ; niveau 3 et plus : carré de 6 px et libellé de 12 px en couleur secondaire. Le libellé a un fond papier. La seule redline a son carré et sa date en rouge.
+- **Place des libellés** : les libellés sont mesurés avec les vraies polices ; les cercles du radial s'agrandissent et les colonnes de l'arbre s'écartent jusqu'à ce qu'aucun nœud, libellé compris, n'en recouvre un autre. Dans l'arbre, l'arête part après le libellé du parent.
+- **Recadrage** : tout le plan s'il tient à une taille lisible (zoom ≥ 0,8 sur iPhone, 0,75 sur ordinateur) ; sinon, le centre (radial) ou la racine (arbre) à cette taille, et l'on glisse pour le reste.
 - **Tâche faite** : carré vide avec une croix, libellé en cote : estompée, jamais cachée.
 - **Arêtes** : trait de 1 px à 75 % d'opacité ; droites (radial, libre) ou à angle droit (arbre). Celles d'un nœud nouveau se tracent.
 - **Liens libres** : courbe pointillée 4/4 à la couleur du calque du projet, libellé en cote au milieu.
